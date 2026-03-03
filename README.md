@@ -18,7 +18,7 @@ Backend REST API for the Quinn's Laundry Point of Sale system, built with Larave
 
 - PHP >= 8.1
 - Composer
-- Node.js & npm (for asset compilation)
+- PostgreSQL 14+
 
 ---
 
@@ -32,20 +32,11 @@ cd laundry-pos-api
 # Install PHP dependencies
 composer install
 
-# Install Node dependencies
-npm install
-
 # Copy environment file and configure
 cp .env.example .env
 
 # Generate application key
 php artisan key:generate
-
-# Run database migrations
-php artisan migrate
-
-# Start the development server
-php artisan serve
 ```
 
 ---
@@ -56,36 +47,74 @@ Copy `.env.example` to `.env` and update the following:
 
 ```env
 APP_NAME="Quinns Laundry POS"
+APP_ENV=local
 APP_URL=http://localhost
 
-DB_CONNECTION=mysql
+DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_PORT=5432
 DB_DATABASE=laundry_pos
-DB_USERNAME=your_db_user
+DB_USERNAME=postgres
 DB_PASSWORD=your_db_password
 ```
 
-## Authentication
-
-This API uses [Laravel Sanctum](https://laravel.com/docs/sanctum) for token-based authentication.
-
-Include the token in the `Authorization` header for protected routes:
-
-```
-Authorization: Bearer <your-token>
-```
+> On Railway, these variables are automatically injected from the Railway dashboard.
 
 ---
 
-## Testing
+## Database Setup
+
+### Local (WSL / Linux)
 
 ```bash
-php artisan test
+# Start PostgreSQL
+sudo service postgresql start
+
+# Create the database
+sudo -u postgres psql -c "CREATE DATABASE laundry_pos;"
+```
+
+### Run Migrations
+
+```bash
+# Run all migrations
+php artisan migrate
+
+# Rollback last migration batch
+php artisan migrate:rollback
+
+# Fresh migration (drops all tables and re-runs)
+php artisan migrate:fresh
+
+# Fresh migration with seeders
+php artisan migrate:fresh --seed
 ```
 
 ---
 
-## License
+## Running the Server
 
-Private — Quinn's Laundry. All rights reserved.
+```bash
+# WSL users — use 0.0.0.0 to allow Windows access
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+---
+
+## API Reference
+
+All endpoints are prefixed with `/api/v1`.
+
+---
+
+### Customers
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/v1/customers` | List all customers | Yes |
+| POST | `/api/v1/customers` | Create a new customer | Yes |
+| GET | `/api/v1/customers/{id}` | Get a single customer | Yes |
+| PUT | `/api/v1/customers/{id}` | Update a customer | Yes |
+| DELETE | `/api/v1/customers/{id}` | Soft delete a customer | Yes |
+
+
