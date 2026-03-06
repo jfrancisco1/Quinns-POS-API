@@ -1,7 +1,7 @@
-FROM php:8.4-apache
+FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpq-dev libonig-dev libxml2-dev \
+    git curl zip unzip libpq-dev libonig-dev libxml2-dev nginx \
     && docker-php-ext-install pdo pdo_pgsql mbstring xml
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -12,17 +12,10 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork rewrite
-
-
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+COPY docker/nginx.conf /etc/nginx/sites-available/default
 
-CMD ["bash", "-c", "php artisan migrate --force && apache2-foreground"]
+EXPOSE 80
+
+CMD ["bash", "-c", "php artisan migrate --force && php-fpm -D && nginx -g 'daemon off;'"]
