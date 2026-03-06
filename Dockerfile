@@ -1,35 +1,27 @@
 FROM php:8.4-apache
-# Install dependencies
+
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpq-dev libonig-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_pgsql mbstring xml
 
-# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project
 COPY . .
 
-# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set Apache document root to /public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+RUN a2enmod rewrite headers
 
-# Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 80
-
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
+
+CMD ["bash", "-c", "php artisan migrate --force && apache2-foreground"]
