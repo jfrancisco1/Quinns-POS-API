@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('color')->nullable();
+            $table->string('name');
+            $table->string('username')->unique();
+            $table->string('password');
+            $table->enum('role', ['admin', 'staff', 'delivery'])->default('staff');
             $table->boolean('is_active')->default(true);
+            $table->rememberToken();
             $table->timestamps();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete(); // null = access all branches
         });
     }
 
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('users');
     }
 };

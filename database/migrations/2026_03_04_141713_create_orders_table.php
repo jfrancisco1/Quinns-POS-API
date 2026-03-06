@@ -20,7 +20,13 @@ return new class extends Migration
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->enum('order_type', ['walk-in', 'pickup-deliver'])->default('pickup-deliver');
             $table->text('note')->nullable();
+            $table->enum('payment_status', ['paid', 'unpaid'])->default('unpaid');
+            $table->enum('order_status', ['pending', 'in_progress', 'ready', 'completed', 'cancelled'])->default('pending');
+            $table->enum('delivery_status', ['pending', 'delivered'])->nullable();
+            $table->foreignId('discounts_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
+            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
         });
     }
 

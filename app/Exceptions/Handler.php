@@ -23,8 +23,27 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (QueryException $e) {
+            $errorCode = $e->errorInfo[0] ?? null;
+
+            // 23505 = unique violation in PostgreSQL
+            if ($errorCode === '23505') {
+                preg_match('/Key \((.+?)\)=\((.+?)\) already exists/', $e->getMessage(), $matches);
+
+                $column = $matches[1] ?? 'field';
+                $value = $matches[2] ?? '';
+
+                return response()->json([
+                    'message' => "The {$column} '{$value}' is already taken.",
+                ], 422);
+            }
+
+            // 23502 = not null violation
+            if ($errorCode === '23502') {
+                return response()->json([
+                    'message' => 'A required field is missing.',
+                ], 422);
+            }
         });
     }
 }

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('discounts', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('color')->nullable();
+            $table->string('name');
+            $table->enum('type', ['fixed', 'percentage']);
+            $table->decimal('value', 10, 2);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('discounts');
     }
 };

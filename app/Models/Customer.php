@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 
 class Customer extends Model
 {
@@ -14,10 +16,27 @@ class Customer extends Model
         'name',
         'phone',
         'email',
-        'address'
+        'address',
+        'notes',
+        'tenant_id',
+        'branch_id'
     ];
 
     protected $hidden = [
         'deleted_at',
     ];
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $user = Auth::user();
+
+        $query = $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('tenant_id', $user?->tenant_id ?? 1);
+
+        if (in_array($user?->role ?? 'admin', ['staff', 'delivery'])) {
+            $query->where('branch_id', $user?->branch_id ?? 1);
+        }
+
+        return $query->firstOrFail();
+    }
 }
