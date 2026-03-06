@@ -31,4 +31,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
