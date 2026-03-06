@@ -19,6 +19,11 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('customers', CustomerController::class);
 });
 
+Route::get('/run-seeder', function () {
+    Artisan::call('db:seed', ['--force' => true]);
+    return response()->json(['message' => 'Seeder ran successfully!']);
+});
+
 
 /* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
