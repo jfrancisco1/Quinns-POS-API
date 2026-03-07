@@ -1,120 +1,71 @@
 # Quinn's Laundry POS — Backend API
 
-Backend REST API for the Quinn's Laundry Point of Sale system, built with Laravel 10.
+REST API for Quinn's Laundry Point of Sale system.
 
----
-
-## Tech Stack
-
-- **Language:** PHP 8.1+
-- **Framework:** Laravel 10
-- **Authentication:** Laravel Sanctum (token-based)
-- **Database:** PostgreSQL
-- **Testing:** PHPUnit
-
----
-
-## Requirements
-
-- PHP >= 8.1
-- Composer
-- PostgreSQL 14+
+**Stack:** Laravel 10 · PHP 8.4 · PostgreSQL · Nginx · Docker · Railway
 
 ---
 
 ## Getting Started
 
 ```bash
-# Clone the repository
 git clone <repo-url>
 cd laundry-pos-api
-
-# Install PHP dependencies
-composer install
-
-# Copy environment file and configure
 cp .env.example .env
 
-# Generate application key
+composer install
 php artisan key:generate
-```
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and update the following:
-
-```env
-APP_NAME="Quinns Laundry POS"
-APP_ENV=local
-APP_URL=http://localhost
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=laundry_pos
-DB_USERNAME=postgres
-DB_PASSWORD=your_db_password
-```
-
-> On Railway, these variables are automatically injected from the Railway dashboard.
-
----
-
-## Database Setup
-
-### Local (WSL / Linux)
-
-```bash
-# Start PostgreSQL
-sudo service postgresql start
-
-# Create the database
-sudo -u postgres psql -c "CREATE DATABASE laundry_pos;"
-```
-
-### Run Migrations
-
-```bash
-# Run all migrations
 php artisan migrate
-
-# Rollback last migration batch
-php artisan migrate:rollback
-
-# Fresh migration (drops all tables and re-runs)
-php artisan migrate:fresh
-
-# Fresh migration with seeders
-php artisan migrate:fresh --seed
+php artisan serve --host=0.0.0.0 --port=8000
 ```
 
----
-
-## Running the Server
+**With Docker**
 
 ```bash
-# WSL users — use 0.0.0.0 to allow Windows access
-php artisan serve --host=0.0.0.0 --port=8000
+docker build -t laundry-pos-api .
+docker run -p 80:80 --env-file .env laundry-pos-api
 ```
 
 ---
 
 ## API Reference
 
-All endpoints are prefixed with `/api/v1`.
+**Base URL:** `https://laundryappapi-production.up.railway.app/api/v1`  
+**Format:** `application/json`
+
+**Status Codes:** `200` Success · `201` Created · `404` Not found · `422` Validation error · `500` Server error
 
 ---
 
 ### Customers
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/v1/customers` | List all customers | Yes |
-| POST | `/api/v1/customers` | Create a new customer | Yes |
-| GET | `/api/v1/customers/{id}` | Get a single customer | Yes |
-| PUT | `/api/v1/customers/{id}` | Update a customer | Yes |
-| DELETE | `/api/v1/customers/{id}` | Soft delete a customer | Yes |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/customers` | List all customers |
+| POST | `/customers` | Create a customer |
+| GET | `/customers/{id}` | Get a customer |
+| PUT | `/customers/{id}` | Update a customer |
+| DELETE | `/customers/{id}` | Soft delete a customer |
 
+**Customer object**
+```json
+{ "id": 1, "name": "Maria Santos", "phone": "09171234567", "email": "...", "address": "...", "notes": null, "created_at": "...", "updated_at": "..." }
+```
 
+**GET** `/customers` — Returns all customers (no pagination).
+
+**POST** `/customers` — Returns `201` with created customer.
+
+| Field | Required |
+|-------|----------|
+| `name` | ✅ |
+| `phone` | ✅ unique |
+| `email` | ❌ unique |
+| `address` | ❌ |
+| `notes` | ❌ |
+
+**GET** `/customers/{id}` — Returns customer or `404`.
+
+**PUT** `/customers/{id}` — Same fields as POST, all optional.
+
+**DELETE** `/customers/{id}` — Soft delete. Returns `{ "message": "Customer deleted successfully." }`
