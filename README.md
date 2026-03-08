@@ -30,10 +30,16 @@ docker run -p 80:80 --env-file .env laundry-pos-api
 
 ## API Reference
 
-**Base URL:** `https://laundryappapi-production.up.railway.app/api/v1`  
+**Base URL:** `https://laundryappapi-production.up.railway.app/api/v1`
 **Format:** `application/json`
 
-**Status Codes:** `200` Success · `201` Created · `404` Not found · `422` Validation error · `500` Server error
+| Status Code | Meaning |
+|-------------|---------|
+| `200` | Success |
+| `201` | Created |
+| `404` | Not found |
+| `422` | Validation error |
+| `500` | Server error |
 
 ---
 
@@ -45,27 +51,105 @@ docker run -p 80:80 --env-file .env laundry-pos-api
 | POST | `/customers` | Create a customer |
 | GET | `/customers/{id}` | Get a customer |
 | PUT | `/customers/{id}` | Update a customer |
-| DELETE | `/customers/{id}` | Soft delete a customer |
+| DELETE | `/customers/{id}` | Delete a customer |
 
-**Customer object**
+**Fields**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | ✅ | Must be unique |
+| `phone` | string | ❌ | Must be unique |
+| `email` | string | ❌ | Must be unique |
+| `address` | string | ❌ | |
+| `notes` | string | ❌ | |
+
+**Response**
 ```json
-{ "id": 1, "name": "Maria Santos", "phone": "09171234567", "email": "...", "address": "...", "notes": null, "created_at": "...", "updated_at": "..." }
+{
+  "id": 1,
+  "name": "Maria Santos",
+  "phone": "09171234567",
+  "email": "maria@email.com",
+  "address": "123 Main St",
+  "notes": null,
+  "created_at": "2024-01-01 00:00:00",
+  "updated_at": "2024-01-01 00:00:00"
+}
 ```
 
-**GET** `/customers` — Returns all customers (no pagination).
+---
 
-**POST** `/customers` — Returns `201` with created customer.
+### Categories
 
-| Field | Required |
-|-------|----------|
-| `name` | ✅ |
-| `phone` | ✅ unique |
-| `email` | ❌ unique |
-| `address` | ❌ |
-| `notes` | ❌ |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/categories` | List all categories |
+| POST | `/categories` | Create a category |
+| GET | `/categories/{id}` | Get a category |
+| PUT | `/categories/{id}` | Update a category |
+| DELETE | `/categories/{id}` | Delete a category |
 
-**GET** `/customers/{id}` — Returns customer or `404`.
+**Fields**
 
-**PUT** `/customers/{id}` — Same fields as POST, all optional.
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | ✅ | Must be unique |
+| `color` | string | ❌ | e.g. `#FF5733` |
+| `is_active` | boolean | ❌ | Defaults to `true` |
 
-**DELETE** `/customers/{id}` — Soft delete. Returns `{ "message": "Customer deleted successfully." }`
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Dry Cleaning",
+  "color": "#FF5733",
+  "is_active": true,
+  "created_at": "2024-01-01 00:00:00",
+  "updated_at": "2024-01-01 00:00:00"
+}
+```
+
+---
+
+### Items
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/items` | List all items |
+| POST | `/items` | Create an item |
+| GET | `/items/{id}` | Get an item |
+| PUT | `/items/{id}` | Update an item |
+| DELETE | `/items/{id}` | Delete an item |
+
+**Fields**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | ✅ | |
+| `price` | decimal | ✅ | Selling price |
+| `cost` | decimal | ✅ | Cost price |
+| `description` | string | ❌ | |
+| `image` | string | ❌ | Image path or URL |
+| `is_active` | boolean | ❌ | Defaults to `true` |
+| `category_id` | integer | ❌ | Must exist in categories |
+
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Polo Shirt",
+  "description": "Regular wash and press",
+  "image": null,
+  "price": "50.00",
+  "cost": "20.00",
+  "is_active": true,
+  "category": {
+    "id": 1,
+    "name": "Dry Cleaning",
+    "color": "#FF5733",
+    "is_active": true
+  },
+  "created_at": "2024-01-01 00:00:00",
+  "updated_at": "2024-01-01 00:00:00"
+}
+```
