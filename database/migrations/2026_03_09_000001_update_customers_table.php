@@ -12,11 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->renameColumn('name', 'nickname');
-            $table->renameColumn('phone', 'mobile');
-            $table->dropUnique(['email']);
-            $table->dropColumn('email');
-            $table->decimal('delivery_fee', 8, 2)->default(0)->after('notes');
+            if (Schema::hasColumn('customers', 'name')) {
+                $table->renameColumn('name', 'nickname');
+            }
+            if (Schema::hasColumn('customers', 'phone')) {
+                $table->renameColumn('phone', 'mobile');
+            }
+            if (Schema::hasColumn('customers', 'email')) {
+                $table->dropUnique(['email']);
+                $table->dropColumn('email');
+            }
+            if (!Schema::hasColumn('customers', 'delivery_fee')) {
+                $table->decimal('delivery_fee', 8, 2)->default(0)->after('notes');
+            }
         });
     }
 
