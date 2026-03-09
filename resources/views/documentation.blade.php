@@ -233,6 +233,8 @@
     <div class="sidebar-title">Quinn's Laundry</div>
     <a href="#overview">Overview</a>
     <a href="#customers">Customers</a>
+    <a href="#orders">Orders</a>
+    <a href="#expenses">Expenses</a>
     <a href="#categories">Categories</a>
     <a href="#items">Items</a>
 </nav>
@@ -303,25 +305,195 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">name</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
-                <tr><td class="field-name">phone</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
-                <tr><td class="field-name">email</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
+                <tr><td class="field-name">nickname</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
+                <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td></td></tr>
                 <tr><td class="field-name">notes</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Defaults to 0.00</td></tr>
+                <tr><td class="field-name">delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Defaults to 75.00</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response</div>
+        <div class="code-block"><span class="key">"mobile"</span>: <span class="str">"09171234567"</span>,
+<span class="key">"nickname"</span>: <span class="str">"Maria Santos"</span>,
+<span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
+<span class="key">"notes"</span>: <span class="str">""</span>,
+<span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+<span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
+<span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Orders --}}
+    <section id="orders">
+        <div class="section-title">Orders</div>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/orders</td>
+                    <td class="desc">List all orders (with items)</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/orders</td>
+                    <td class="desc">Create an order</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/orders/{orderNumber}</td>
+                    <td class="desc">Get an order with items</td>
+                </tr>
+                <tr>
+                    <td><span class="method put">PUT</span></td>
+                    <td class="path">/orders/{orderNumber}</td>
+                    <td class="desc">Update an order</td>
+                </tr>
+                <tr>
+                    <td><span class="method delete">DELETE</span></td>
+                    <td class="path">/orders/{orderNumber}</td>
+                    <td class="desc">Delete an order</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Order Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">orderNumber</td><td>string</td><td class="required">Yes</td><td>Client-generated unique ID</td></tr>
+                <tr><td class="field-name">customer_nickname</td><td>string</td><td class="required">Yes</td><td>Snapshot of customer name</td></tr>
+                <tr><td class="field-name">customer_mobile</td><td>string</td><td class="required">Yes</td><td>Snapshot of customer mobile</td></tr>
+                <tr><td class="field-name">customer_address</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">customer_notes</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">customer_delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Default 75</td></tr>
+                <tr><td class="field-name">fulfillmentType</td><td>string</td><td class="required">Yes</td><td>walk-in | delivery</td></tr>
+                <tr><td class="field-name">subtotal</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">deliveryFee</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
+                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>paid | unpaid (default: unpaid)</td></tr>
+                <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed | cancelled</td></tr>
+                <tr><td class="field-name">items</td><td>array</td><td class="required">Yes</td><td>At least 1 item required</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Item Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">itemId</td><td>string</td><td class="required">Yes</td><td>Snapshot — not validated against items table</td></tr>
+                <tr><td class="field-name">label</td><td>string</td><td class="required">Yes</td><td>Snapshot of item name</td></tr>
+                <tr><td class="field-name">unit</td><td>string</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">qty</td><td>integer</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">price</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response</div>
+        <div class="code-block"><span class="key">"orderNumber"</span>: <span class="str">"ORD-20260309-001"</span>,
+<span class="key">"customer_nickname"</span>: <span class="str">"Maria Santos"</span>,
+<span class="key">"customer_mobile"</span>: <span class="str">"09171234567"</span>,
+<span class="key">"customer_address"</span>: <span class="str">"123 Main St"</span>,
+<span class="key">"customer_notes"</span>: <span class="str">""</span>,
+<span class="key">"customer_delivery_fee"</span>: <span class="num">75</span>,
+<span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
+<span class="key">"subtotal"</span>: <span class="num">150</span>,
+<span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+<span class="key">"total"</span>: <span class="num">225</span>,
+<span class="key">"createdAt"</span>: <span class="str">"2026-03-09T00:00:00.000000Z"</span>,
+<span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
+<span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span>,
+<span class="key">"items"</span>: [
+  {
+    <span class="key">"orderNumber"</span>: <span class="str">"ORD-20260309-001"</span>,
+    <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>,
+    <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>,
+    <span class="key">"unit"</span>: <span class="str">"piece"</span>,
+    <span class="key">"qty"</span>: <span class="num">2</span>,
+    <span class="key">"price"</span>: <span class="num">75</span>
+  }
+]</div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Expenses --}}
+    <section id="expenses">
+        <div class="section-title">Expenses</div>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/expenses</td>
+                    <td class="desc">List all expenses</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/expenses</td>
+                    <td class="desc">Create an expense</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/expenses/{id}</td>
+                    <td class="desc">Get an expense</td>
+                </tr>
+                <tr>
+                    <td><span class="method put">PUT</span></td>
+                    <td class="path">/expenses/{id}</td>
+                    <td class="desc">Update an expense</td>
+                </tr>
+                <tr>
+                    <td><span class="method delete">DELETE</span></td>
+                    <td class="path">/expenses/{id}</td>
+                    <td class="desc">Delete an expense</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">description</td><td>string</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">amount</td><td>decimal</td><td class="required">Yes</td><td>Min 0</td></tr>
+                <tr><td class="field-name">expense_date</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD</td></tr>
+                <tr><td class="field-name">note</td><td>string</td><td class="optional">No</td><td></td></tr>
             </tbody>
         </table>
 
         <div class="fields-title">Response</div>
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
-<span class="key">"name"</span>: <span class="str">"Maria Santos"</span>,
-<span class="key">"phone"</span>: <span class="str">"09171234567"</span>,
-<span class="key">"email"</span>: <span class="str">"maria@email.com"</span>,
-<span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
-<span class="key">"notes"</span>: <span class="null">null</span>,
-<span class="key">"delivery_fee"</span>: <span class="str">"0.00"</span>,
-<span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
-<span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
+<span class="key">"description"</span>: <span class="str">"Detergent supply"</span>,
+<span class="key">"amount"</span>: <span class="num">500</span>,
+<span class="key">"expense_date"</span>: <span class="str">"2026-03-09"</span>,
+<span class="key">"note"</span>: <span class="null">null</span>,
+<span class="key">"user_id"</span>: <span class="num">1</span>,
+<span class="key">"created_at"</span>: <span class="str">"2026-03-09 00:00:00"</span>,
+<span class="key">"updated_at"</span>: <span class="str">"2026-03-09 00:00:00"</span></div>
     </section>
 
     <hr class="divider">

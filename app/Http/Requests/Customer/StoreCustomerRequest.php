@@ -22,19 +22,18 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:customers,name'],
-            'phone' => ['nullable', 'string', 'max:20', 'unique:customers,phone'],
-            'email' => ['nullable', 'email', 'unique:customers,email'],
+            'nickname' => ['required', 'string', 'max:255', 'unique:customers,nickname'],
+            'mobile' => ['nullable', 'string', 'max:20', 'unique:customers,mobile'],
             'address' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string']
+            'notes' => ['nullable', 'string'],
+            'delivery_fee' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'phone.unique' => 'A customer with this phone number already exists.',
-            'email.unique' => 'A customer with this email already exists.',
+            'mobile.unique' => 'A customer with this mobile number already exists.',
         ];
     }
 }
