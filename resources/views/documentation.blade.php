@@ -372,19 +372,14 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">orderNumber</td><td>string</td><td class="required">Yes</td><td>Client-generated unique ID</td></tr>
-                <tr><td class="field-name">customer_nickname</td><td>string</td><td class="required">Yes</td><td>Snapshot of customer name</td></tr>
-                <tr><td class="field-name">customer_mobile</td><td>string</td><td class="required">Yes</td><td>Snapshot of customer mobile</td></tr>
-                <tr><td class="field-name">customer_address</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">customer_notes</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">customer_delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Default 75</td></tr>
-                <tr><td class="field-name">fulfillmentType</td><td>string</td><td class="required">Yes</td><td>walk-in | delivery</td></tr>
+                <tr><td class="field-name">customer_id</td><td>integer</td><td class="required">Yes</td><td>Must exist in customers</td></tr>
+                <tr><td class="field-name">fulfillmentType</td><td>string</td><td class="required">Yes</td><td>walk-in | pickup-deliver</td></tr>
                 <tr><td class="field-name">subtotal</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">deliveryFee</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
-                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>paid | unpaid (default: unpaid)</td></tr>
-                <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed | cancelled</td></tr>
+                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | pending | paid_gcash | paid_cash (default: unpaid)</td></tr>
+                <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed (default: in_progress)</td></tr>
                 <tr><td class="field-name">items</td><td>array</td><td class="required">Yes</td><td>At least 1 item required</td></tr>
             </tbody>
         </table>
@@ -404,22 +399,26 @@
         </table>
 
         <div class="fields-title">Response</div>
-        <div class="code-block"><span class="key">"orderNumber"</span>: <span class="str">"ORD-20260309-001"</span>,
-<span class="key">"customer_nickname"</span>: <span class="str">"Maria Santos"</span>,
-<span class="key">"customer_mobile"</span>: <span class="str">"09171234567"</span>,
-<span class="key">"customer_address"</span>: <span class="str">"123 Main St"</span>,
-<span class="key">"customer_notes"</span>: <span class="str">""</span>,
-<span class="key">"customer_delivery_fee"</span>: <span class="num">75</span>,
+        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
+<span class="key">"orderNumber"</span>: <span class="str">"ORD-00001"</span>,
+<span class="key">"customer_id"</span>: <span class="num">1</span>,
+<span class="key">"customer"</span>: {
+  <span class="key">"mobile"</span>: <span class="str">"09171234567"</span>,
+  <span class="key">"nickname"</span>: <span class="str">"Maria Santos"</span>,
+  <span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
+  <span class="key">"notes"</span>: <span class="str">""</span>,
+  <span class="key">"deliveryFee"</span>: <span class="num">75</span>
+},
 <span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
 <span class="key">"subtotal"</span>: <span class="num">150</span>,
 <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
 <span class="key">"total"</span>: <span class="num">225</span>,
-<span class="key">"createdAt"</span>: <span class="str">"2026-03-09T00:00:00.000000Z"</span>,
+<span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
 <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
 <span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span>,
 <span class="key">"items"</span>: [
   {
-    <span class="key">"orderNumber"</span>: <span class="str">"ORD-20260309-001"</span>,
+    <span class="key">"id"</span>: <span class="num">1</span>,
     <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>,
     <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>,
     <span class="key">"unit"</span>: <span class="str">"piece"</span>,

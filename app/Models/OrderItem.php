@@ -10,7 +10,7 @@ class OrderItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'order_number',
+        'order_id',
         'item_id',
         'label',
         'unit',
@@ -25,6 +25,6 @@ class OrderItem extends Model
 
     public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class, 'order_number', 'order_number');
+        return $this->belongsTo(Order::class);
     }
 }

@@ -3,22 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 
 class Order extends Model
 {
-    protected $primaryKey = 'order_number';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
-        'order_number',
-        'customer_nickname',
-        'customer_mobile',
-        'customer_address',
-        'customer_notes',
-        'customer_delivery_fee',
+        'customer_id',
         'fulfillment_type',
         'subtotal',
         'delivery_fee',
@@ -35,22 +27,26 @@ class Order extends Model
         'subtotal'          => 'float',
         'delivery_fee'      => 'float',
         'total'             => 'float',
-        'customer_delivery_fee' => 'float',
     ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class, 'order_number', 'order_number');
+        return $this->hasMany(OrderItem::class);
     }
 
     public function paymentHistory(): HasMany
     {
-        return $this->hasMany(PaymentHistory::class, 'order_number', 'order_number');
+        return $this->hasMany(PaymentHistory::class);
     }
 
     public function orderStatusHistory(): HasMany
     {
-        return $this->hasMany(OrderStatusHistory::class, 'order_number', 'order_number');
+        return $this->hasMany(OrderStatusHistory::class);
     }
 
     public function resolveRouteBinding($value, $field = null)

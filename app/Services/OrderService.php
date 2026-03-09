@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Order;
-use App\Models\PaymentHistory;
-use App\Models\OrderStatusHistory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +17,7 @@ class OrderService extends BaseService
     public function getAll(): Collection
     {
         return $this->tenantScope()
-            ->with('items')
+            ->with(['customer', 'items'])
             ->latest()
             ->get();
     }
@@ -30,26 +28,24 @@ class OrderService extends BaseService
 
         return DB::transaction(function () use ($data, $user) {
             $order = Order::create([
-                'order_number'          => $data['orderNumber'],
-                'customer_nickname'     => $data['customer_nickname'],
-                'customer_mobile'       => $data['customer_mobile'],
-                'customer_address'      => $data['customer_address'] ?? '',
-                'customer_notes'        => $data['customer_notes'] ?? '',
-                'customer_delivery_fee' => $data['customer_delivery_fee'] ?? 75,
-                'fulfillment_type'      => $data['fulfillmentType'],
-                'subtotal'              => $data['subtotal'],
-                'delivery_fee'          => $data['deliveryFee'],
-                'total'                 => $data['total'],
-                'created_at_client'     => isset($data['createdAt']) ? \Carbon\Carbon::parse($data['createdAt']) : now(),
-                'payment_status'        => $data['paymentStatus'] ?? 'unpaid',
-                'order_status'          => $data['orderStatus'] ?? 'in_progress',
-                'tenant_id'             => $user->tenant_id ?? 1,
-                'branch_id'             => $user->branch_id ?? 1,
+                'customer_id'       => $data['customer_id'],
+                'fulfillment_type'  => $data['fulfillmentType'],
+                'subtotal'          => $data['subtotal'],
+                'delivery_fee'      => $data['deliveryFee'],
+                'total'             => $data['total'],
+                'created_at_client' => isset($data['createdAt']) ? \Carbon\Carbon::parse($data['createdAt']) : now(),
+                'payment_status'    => $data['paymentStatus'] ?? 'unpaid',
+                'order_status'      => $data['orderStatus'] ?? 'in_progress',
+                'tenant_id'         => $user->tenant_id ?? 1,
+                'branch_id'         => $user->branch_id ?? 1,
             ]);
+
+            $order->order_number = 'ORD-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
+            $order->save();
 
             $this->syncItems($order, $data['items']);
 
-            return $order->load('items');
+            return $order->load(['customer', 'items']);
         });
     }
 
@@ -57,50 +53,21 @@ class OrderService extends BaseService
     {
         $this->authorizeTenant($order);
 
-        return DB::transaction(function () use ($order, $data) {
-            $oldPaymentStatus = $order->payment_status;
-            $oldOrderStatus   = $order->order_status;
+        $order->update(array_filter([
+            'customer_id'      => $data['customer_id'] ?? null,
+            'fulfillment_type' => $data['fulfillmentType'] ?? null,
+            'subtotal'         => $data['subtotal'] ?? null,
+            'delivery_fee'     => $data['deliveryFee'] ?? null,
+            'total'            => $data['total'] ?? null,
+            'payment_status'   => $data['paymentStatus'] ?? null,
+            'order_status'     => $data['orderStatus'] ?? null,
+        ], fn($v) => $v !== null));
 
-            $order->update(array_filter([
-                'customer_nickname'     => $data['customer_nickname'] ?? null,
-                'customer_mobile'       => $data['customer_mobile'] ?? null,
-                'customer_address'      => $data['customer_address'] ?? null,
-                'customer_notes'        => $data['customer_notes'] ?? null,
-                'customer_delivery_fee' => $data['customer_delivery_fee'] ?? null,
-                'fulfillment_type'      => $data['fulfillmentType'] ?? null,
-                'subtotal'              => $data['subtotal'] ?? null,
-                'delivery_fee'          => $data['deliveryFee'] ?? null,
-                'total'                 => $data['total'] ?? null,
-                'payment_status'        => $data['paymentStatus'] ?? null,
-                'order_status'          => $data['orderStatus'] ?? null,
-            ], fn($v) => $v !== null));
+        if (isset($data['items'])) {
+            $this->syncItems($order, $data['items']);
+        }
 
-            $order->refresh();
-
-            if (isset($data['paymentStatus']) && $data['paymentStatus'] !== $oldPaymentStatus) {
-                PaymentHistory::create([
-                    'order_number' => $order->order_number,
-                    'from_status'  => $oldPaymentStatus,
-                    'to_status'    => $data['paymentStatus'],
-                    'changed_at'   => now(),
-                ]);
-            }
-
-            if (isset($data['orderStatus']) && $data['orderStatus'] !== $oldOrderStatus) {
-                OrderStatusHistory::create([
-                    'order_number' => $order->order_number,
-                    'from_status'  => $oldOrderStatus,
-                    'to_status'    => $data['orderStatus'],
-                    'changed_at'   => now(),
-                ]);
-            }
-
-            if (isset($data['items'])) {
-                $this->syncItems($order, $data['items']);
-            }
-
-            return $order->load('items');
-        });
+        return $order->load(['customer', 'items']);
     }
 
     public function delete(Order $order): void
@@ -114,12 +81,12 @@ class OrderService extends BaseService
         $order->items()->delete();
 
         $rows = array_map(fn($item) => [
-            'order_number' => $order->order_number,
-            'item_id'      => $item['itemId'],
-            'label'        => $item['label'],
-            'unit'         => $item['unit'],
-            'qty'          => $item['qty'],
-            'price'        => $item['price'],
+            'order_id' => $order->id,
+            'item_id'  => $item['itemId'],
+            'label'    => $item['label'],
+            'unit'     => $item['unit'],
+            'qty'      => $item['qty'],
+            'price'    => $item['price'],
         ], $items);
 
         $order->items()->insert($rows);
