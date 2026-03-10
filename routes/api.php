@@ -28,3 +28,8 @@ Route::get('/run-seeder', function () {
     Artisan::call('db:seed', ['--force' => true]);
     return response()->json(['message' => 'Seeder ran successfully!']);
 });
+
+Route::get('/run-user-seeder', function () {
+    Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
+    return response()->json(['message' => 'UserSeeder ran successfully!']);
+});
