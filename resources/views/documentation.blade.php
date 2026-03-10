@@ -232,6 +232,7 @@
 <nav class="sidebar">
     <div class="sidebar-title">Quinn's Laundry</div>
     <a href="#overview">Overview</a>
+    <a href="#auth">Authentication</a>
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
     <a href="#expenses">Expenses</a>
@@ -254,6 +255,85 @@
             <span class="badge badge-422">422 Validation Error</span>
             <span class="badge badge-500">500 Server Error</span>
         </div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Authentication --}}
+    <section id="auth">
+        <div class="section-title">Authentication</div>
+
+        <p class="desc" style="margin-bottom: 20px;">
+            All endpoints except <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">POST /login</code> require a Bearer token in the <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">Authorization</code> header.
+        </p>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Auth</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/login</td>
+                    <td class="desc">Obtain an API token</td>
+                    <td class="desc">Public</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/logout</td>
+                    <td class="desc">Revoke the current token</td>
+                    <td class="desc">Required</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/me</td>
+                    <td class="desc">Get the authenticated user</td>
+                    <td class="desc">Required</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Login Request</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">username</td><td>string</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">password</td><td>string</td><td class="required">Yes</td><td></td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Login Response</div>
+        <div class="code-block"><span class="key">"token"</span>: <span class="str">"1|abc123..."</span>,
+<span class="key">"user"</span>: {
+  <span class="key">"id"</span>: <span class="num">1</span>,
+  <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>,
+  <span class="key">"username"</span>: <span class="str">"juan"</span>,
+  <span class="key">"role"</span>: <span class="str">"admin"</span>,
+  <span class="key">"tenant_id"</span>: <span class="num">1</span>,
+  <span class="key">"branch_id"</span>: <span class="null">null</span>
+}</div>
+
+        <div class="fields-title">Using the Token</div>
+        <div class="code-block">Authorization: Bearer 1|abc123...</div>
+
+        <div class="fields-title">Error Responses</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Status</th><th>Reason</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>422</td><td>Invalid credentials</td></tr>
+                <tr><td>403</td><td>Account is inactive</td></tr>
+                <tr><td>401</td><td>Missing or invalid token on protected routes</td></tr>
+            </tbody>
+        </table>
     </section>
 
     <hr class="divider">

@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -21,9 +22,18 @@ class Handler extends ExceptionHandler
     /**
      * Register the exception handling callbacks for the application.
      */
+    public function render($request, Throwable $e)
+    {
+        if ($request->is('api/*')) {
+            $request->headers->set('Accept', 'application/json');
+        }
+
+        return parent::render($request, $e);
+    }
+
     public function register(): void
     {
-        $this->renderable(function (QueryException $e) {
+        $this->renderable(function (\Illuminate\Database\QueryException $e) {
             $errorCode = $e->errorInfo[0] ?? null;
 
             // 23505 = unique violation in PostgreSQL
