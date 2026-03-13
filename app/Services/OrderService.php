@@ -27,8 +27,8 @@ class OrderService extends BaseService
         $user = Auth::user();
 
         return DB::transaction(function () use ($data, $user) {
-            $order = Order::create([
-                'customer_id'       => $data['customer_id'],
+            $payload = [
+                'customer_id'       => $data['customer_id'] ?? null,
                 'fulfillment_type'  => $data['fulfillmentType'],
                 'subtotal'          => $data['subtotal'],
                 'delivery_fee'      => $data['deliveryFee'],
@@ -38,12 +38,22 @@ class OrderService extends BaseService
                 'order_status'      => $data['orderStatus'] ?? 'in_progress',
                 'tenant_id'         => $user->tenant_id ?? 1,
                 'branch_id'         => $user->branch_id ?? 1,
-            ]);
+            ];
 
-            $order->order_number = 'ORD-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
-            $order->save();
+            // Idempotent: client-generated UUID prevents duplicates on re-sync
+            if (!empty($data['id'])) {
+                $order = Order::updateOrCreate(['id' => $data['id']], $payload);
+            } else {
+                $order = Order::create($payload);
+            }
 
-            $this->syncItems($order, $data['items']);
+            if (empty($order->order_number)) {
+                $count = Order::where('branch_id', $order->branch_id)->count();
+                $order->order_number = 'ORD-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+                $order->save();
+            }
+
+            $this->syncItems($order, $data['items'] ?? []);
 
             return $order->load(['customer', 'items']);
         });
@@ -80,15 +90,14 @@ class OrderService extends BaseService
     {
         $order->items()->delete();
 
-        $rows = array_map(fn($item) => [
-            'order_id' => $order->id,
-            'item_id'  => $item['itemId'],
-            'label'    => $item['label'],
-            'unit'     => $item['unit'],
-            'qty'      => $item['qty'],
-            'price'    => $item['price'],
-        ], $items);
-
-        $order->items()->insert($rows);
+        foreach ($items as $item) {
+            $order->items()->create([
+                'item_id' => $item['itemId'],
+                'label'   => $item['label'],
+                'unit'    => $item['unit'],
+                'qty'     => $item['qty'],
+                'price'   => $item['price'],
+            ]);
+        }
     }
 }

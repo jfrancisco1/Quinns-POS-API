@@ -2,24 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
-
 class Customer extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
+
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'nickname',
         'mobile',
         'address',
         'notes',
         'delivery_fee',
         'tenant_id',
-        'branch_id'
+        'branch_id',
     ];
 
     protected $hidden = [

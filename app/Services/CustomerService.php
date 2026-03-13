@@ -20,7 +20,7 @@ class CustomerService extends BaseService
             ->get();
     }
 
-    public function findById(int $id): Customer
+    public function findById(string $id): Customer
     {
         return $this->tenantScope()
             ->findOrFail($id);
@@ -30,11 +30,18 @@ class CustomerService extends BaseService
     {
         $user = Auth::user();
 
-        return Customer::create([
+        $payload = [
             ...$data,
             'tenant_id' => $user->tenant_id ?? 1,
             'branch_id' => $user->branch_id ?? 1,
-        ]);
+        ];
+
+        // Idempotent: client-generated UUID prevents duplicates on re-sync
+        if (!empty($payload['id'])) {
+            return Customer::updateOrCreate(['id' => $payload['id']], $payload);
+        }
+
+        return Customer::create($payload);
     }
 
     public function update(Customer $customer, array $data): Customer

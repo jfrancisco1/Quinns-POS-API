@@ -24,12 +24,19 @@ class ExpenseService extends BaseService
     {
         $user = Auth::user();
 
-        return Expense::create([
+        $payload = [
             ...$data,
             'user_id'   => $user->id ?? 1,
             'tenant_id' => $user->tenant_id ?? 1,
             'branch_id' => $user->branch_id ?? 1,
-        ]);
+        ];
+
+        // Idempotent: client-generated UUID prevents duplicates on re-sync
+        if (!empty($payload['id'])) {
+            return Expense::updateOrCreate(['id' => $payload['id']], $payload);
+        }
+
+        return Expense::create($payload);
     }
 
     public function update(Expense $expense, array $data): Expense
