@@ -14,7 +14,7 @@ class OwnerSeeder extends Seeder
             ['username' => 'owner'],
             [
                 'name'      => 'System Owner',
-                'username'  => 'julsanity',
+                'username'  => 'quinns_owner',
                 'password'  => Hash::make('tef$a5wA'),
                 'role'      => 'owner',
                 'is_active' => true,
