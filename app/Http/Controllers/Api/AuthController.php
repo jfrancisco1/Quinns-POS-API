@@ -30,10 +30,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account is inactive.'], 403);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $tokenResult = $user->createToken('api-token');
 
         return response()->json([
-            'token' => $token,
+            'token'      => $tokenResult->plainTextToken,
+            'expires_at' => $tokenResult->accessToken->expires_at?->toDateTimeString(),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,

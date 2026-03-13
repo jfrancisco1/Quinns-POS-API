@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Install PHP dependencies
+# Install PHP dependencies.
 composer install
 
 # Run all tests

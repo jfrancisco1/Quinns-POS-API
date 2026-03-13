@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/docs', function () {
     return view('documentation');
 });
+
+// Owner CMS — catch-all so Vue Router handles navigation
+Route::get('/cms/{any?}', function () {
+    return view('cms');
+})->where('any', '.*');
