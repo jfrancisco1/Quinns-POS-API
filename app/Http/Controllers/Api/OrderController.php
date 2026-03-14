@@ -32,7 +32,7 @@ class OrderController extends Controller
 
     public function show(Order $order): OrderResource
     {
-        return new OrderResource($order->load('items'));
+        return new OrderResource($order->load(['customer', 'items', 'branch']));
     }
 
     public function update(UpdateOrderRequest $request, Order $order): OrderResource

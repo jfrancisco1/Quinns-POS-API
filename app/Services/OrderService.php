@@ -37,7 +37,7 @@ class OrderService extends BaseService
                 'payment_status'    => $data['paymentStatus'] ?? 'unpaid',
                 'order_status'      => $data['orderStatus'] ?? 'in_progress',
                 'tenant_id'         => $user->tenant_id ?? 1,
-                'branch_id'         => $user->branch_id ?? 1,
+                'branch_id'         => $user->branch_id ?? $data['branch_id'] ?? 1,
             ];
 
             // Idempotent: client-generated UUID prevents duplicates on re-sync

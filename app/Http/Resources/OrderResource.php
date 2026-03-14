@@ -21,6 +21,7 @@ class OrderResource extends JsonResource
             'createdAt'      => $this->created_at_client?->toISOString() ?? $this->created_at->toISOString(),
             'paymentStatus'  => $this->payment_status,
             'orderStatus'    => $this->order_status,
+            'branch'         => $this->whenLoaded('branch', fn() => ['id' => $this->branch->id, 'name' => $this->branch->name]),
             'items'          => OrderItemResource::collection($this->whenLoaded('items')),
         ];
     }

@@ -28,7 +28,7 @@ class ExpenseService extends BaseService
             ...$data,
             'user_id'   => $user->id ?? 1,
             'tenant_id' => $user->tenant_id ?? 1,
-            'branch_id' => $user->branch_id ?? 1,
+            'branch_id' => $user->branch_id ?? $data['branch_id'] ?? 1,
         ];
 
         // Idempotent: client-generated UUID prevents duplicates on re-sync

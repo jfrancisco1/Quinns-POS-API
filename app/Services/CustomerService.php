@@ -16,6 +16,8 @@ class CustomerService extends BaseService
     public function getAll(): Collection
     {
         return $this->tenantScope()
+            ->withMax('orders', 'created_at')
+            ->withSum('orders', 'total')
             ->latest()
             ->get();
     }
@@ -33,7 +35,7 @@ class CustomerService extends BaseService
         $payload = [
             ...$data,
             'tenant_id' => $user->tenant_id ?? 1,
-            'branch_id' => $user->branch_id ?? 1,
+            'branch_id' => $user->branch_id ?? $data['branch_id'] ?? 1,
         ];
 
         // Idempotent: client-generated UUID prevents duplicates on re-sync

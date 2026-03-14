@@ -28,7 +28,7 @@ class ItemService extends BaseService
         return Item::create([
             ...$data,
             'tenant_id' => $user->tenant_id ?? 1,
-            'branch_id' => $user->branch_id ?? 1,
+            'branch_id' => $user->branch_id ?? $data['branch_id'] ?? 1,
         ]);
     }
 

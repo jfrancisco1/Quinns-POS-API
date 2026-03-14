@@ -21,6 +21,8 @@ class CustomerResource extends JsonResource
             'address'     => $this->address,
             'notes'       => $this->notes,
             'deliveryFee' => $this->delivery_fee,
+            'last_visit'  => $this->orders_max_created_at,
+            'total_spend' => $this->orders_sum_total ?? 0,
             'created_at'  => $this->created_at->toDateTimeString(),
             'updated_at'  => $this->updated_at->toDateTimeString(),
         ];
