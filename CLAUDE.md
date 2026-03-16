@@ -48,3 +48,19 @@ Laravel 10 REST API for a laundry POS system with multi-tenancy support.
 ## Database Schema
 
 Key tables: `tenants`, `branches`, `users`, `customers`, `orders`, `order_items`, `categories`, `items`, `discounts`, `expenses`. Customers use soft deletes.
+
+## Coding Standards
+
+Read and follow all rules in [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) for every task — new features, bug fixes, and refactors alike.
+
+## API Documentation Rule
+
+**Whenever you add, change, or remove an API endpoint, you MUST update `resources/views/documentation.blade.php`.**
+
+- New endpoint → add a table row and request/response fields.
+- Changed fields → update the relevant fields table.
+- Changed response → update the example JSON block.
+- Removed endpoint → remove its entry entirely.
+- New resource group → add a `<section>` and sidebar `<a>` link.
+
+The documentation blade is the single source of truth for API consumers. Never leave it out of sync with `routes/api.php`.

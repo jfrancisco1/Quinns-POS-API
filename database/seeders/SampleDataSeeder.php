@@ -38,25 +38,24 @@ class SampleDataSeeder extends Seeder
         // 1. CATEGORIES
         // -------------------------------------------------------
         $categoryData = [
-            ['name' => 'Wash & Dry',   'color' => '#3B82F6'],
-            ['name' => 'Wash & Fold',  'color' => '#10B981'],
-            ['name' => 'Dry Clean',    'color' => '#8B5CF6'],
-            ['name' => 'Iron / Press', 'color' => '#F59E0B'],
-            ['name' => 'Comforter',    'color' => '#EF4444'],
-            ['name' => 'Bedsheets',    'color' => '#EC4899'],
+            'Wash & Dry',
+            'Wash & Fold',
+            'Dry Clean',
+            'Iron / Press',
+            'Comforter',
+            'Bedsheets',
         ];
 
         $categories = [];
-        foreach ($categoryData as $cat) {
+        foreach ($categoryData as $name) {
             $id = DB::table('categories')->insertGetId([
-                'name'       => $cat['name'],
-                'color'      => $cat['color'],
+                'name'       => $name,
                 'is_active'  => true,
                 'tenant_id'  => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $categories[$cat['name']] = $id;
+            $categories[$name] = $id;
         }
 
         $this->command->info('✓ Categories seeded: ' . \count($categories));

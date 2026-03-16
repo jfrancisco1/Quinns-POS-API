@@ -16,7 +16,6 @@ class UpdateCategoryRequest extends FormRequest
     {
         return [
             'name'      => ['sometimes', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($this->category)],
-            'color'     => ['nullable', 'string', 'max:50'],
             'is_active' => ['boolean'],
         ];
     }

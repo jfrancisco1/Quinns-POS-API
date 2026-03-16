@@ -16,7 +16,8 @@ class StoreItemRequest extends FormRequest
         return [
             'name'        => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'image'       => ['nullable', 'string', 'max:255'],
+            'color'       => ['nullable', 'string', 'max:50'],
+            'shape'       => ['nullable', 'string', 'in:circle,square,rectangle,hexagon,diamond'],
             'price'       => ['required', 'numeric', 'min:0'],
             'cost'        => ['required', 'numeric', 'min:0'],
             'is_active'   => ['boolean'],

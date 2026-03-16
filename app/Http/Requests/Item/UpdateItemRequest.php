@@ -16,7 +16,8 @@ class UpdateItemRequest extends FormRequest
         return [
             'name'        => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'image'       => ['nullable', 'string', 'max:255'],
+            'color'       => ['nullable', 'string', 'max:50'],
+            'shape'       => ['nullable', 'string', 'in:circle,square,rectangle,hexagon,diamond'],
             'price'       => ['sometimes', 'numeric', 'min:0'],
             'cost'        => ['sometimes', 'numeric', 'min:0'],
             'is_active'   => ['boolean'],

@@ -56,6 +56,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $token = $user->currentAccessToken();
 
         return response()->json([
             'id' => $user->id,
@@ -64,6 +65,7 @@ class AuthController extends Controller
             'role' => $user->role,
             'tenant_id' => $user->tenant_id,
             'branch_id' => $user->branch_id,
+            'token_expires_at' => $token->expires_at?->toDateTimeString(),
         ]);
     }
 }

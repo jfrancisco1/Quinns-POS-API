@@ -152,6 +152,7 @@
         .get    { background: #e6f4ea; color: #1a7f37; }
         .post   { background: #e8f0fe; color: #1a56db; }
         .put    { background: #fef3cd; color: #92400e; }
+        .patch  { background: #fef3cd; color: #92400e; }
         .delete { background: #fde8e8; color: #b91c1c; }
 
         .path {
@@ -233,6 +234,7 @@
     <div class="sidebar-title">Quinn's Laundry</div>
     <a href="#overview">Overview</a>
     <a href="#auth">Authentication</a>
+    <a href="#branches">Branches</a>
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
     <a href="#expenses">Expenses</a>
@@ -311,6 +313,7 @@
 
         <div class="fields-title">Login Response</div>
         <div class="code-block"><span class="key">"token"</span>: <span class="str">"1|abc123..."</span>,
+<span class="key">"expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span>,
 <span class="key">"user"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>,
@@ -319,6 +322,15 @@
   <span class="key">"tenant_id"</span>: <span class="num">1</span>,
   <span class="key">"branch_id"</span>: <span class="null">null</span>
 }</div>
+
+        <div class="fields-title">GET /me Response</div>
+        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
+<span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>,
+<span class="key">"username"</span>: <span class="str">"juan"</span>,
+<span class="key">"role"</span>: <span class="str">"admin"</span>,
+<span class="key">"tenant_id"</span>: <span class="num">1</span>,
+<span class="key">"branch_id"</span>: <span class="null">null</span>,
+<span class="key">"token_expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span></div>
 
         <div class="fields-title">Using the Token</div>
         <div class="code-block">Authorization: Bearer 1|abc123...</div>
@@ -334,6 +346,83 @@
                 <tr><td>401</td><td>Missing or invalid token on protected routes</td></tr>
             </tbody>
         </table>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Branches --}}
+    <section id="branches">
+        <div class="section-title">Branches</div>
+
+        <p class="desc" style="margin-bottom: 20px;">
+            All authenticated users can list and view branches. Create, update, and delete are restricted to <strong>admin</strong> role only.
+        </p>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/branches</td>
+                    <td class="desc">List active branches for the tenant</td>
+                    <td class="desc">All</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/branches</td>
+                    <td class="desc">Create a new branch</td>
+                    <td class="desc">Admin</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/branches/{id}</td>
+                    <td class="desc">Get a branch</td>
+                    <td class="desc">All</td>
+                </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/branches/{id}</td>
+                    <td class="desc">Update a branch</td>
+                    <td class="desc">Admin</td>
+                </tr>
+                <tr>
+                    <td><span class="method delete">DELETE</span></td>
+                    <td class="path">/branches/{id}</td>
+                    <td class="desc">Delete a branch</td>
+                    <td class="desc">Admin</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">name</td><td>string</td><td class="required">Yes</td><td>Max 255 characters</td></tr>
+                <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td>Max 500 characters</td></tr>
+                <tr><td class="field-name">phone</td><td>string</td><td class="optional">No</td><td>Max 20 characters</td></tr>
+                <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response</div>
+        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
+<span class="key">"tenant_id"</span>: <span class="num">1</span>,
+<span class="key">"name"</span>: <span class="str">"Main Branch"</span>,
+<span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
+<span class="key">"phone"</span>: <span class="str">"09171234567"</span>,
+<span class="key">"is_active"</span>: <span class="bool">true</span>,
+<span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
+<span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
     </section>
 
     <hr class="divider">
@@ -625,7 +714,6 @@
             </thead>
             <tbody>
                 <tr><td class="field-name">name</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
-                <tr><td class="field-name">color</td><td>string</td><td class="optional">No</td><td>e.g. #FF5733</td></tr>
                 <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
             </tbody>
         </table>
@@ -633,7 +721,6 @@
         <div class="fields-title">Response</div>
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
 <span class="key">"name"</span>: <span class="str">"Dry Cleaning"</span>,
-<span class="key">"color"</span>: <span class="str">"#FF5733"</span>,
 <span class="key">"is_active"</span>: <span class="bool">true</span>,
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
@@ -692,7 +779,8 @@
                 <tr><td class="field-name">price</td><td>decimal</td><td class="required">Yes</td><td>Selling price</td></tr>
                 <tr><td class="field-name">cost</td><td>decimal</td><td class="required">Yes</td><td>Cost price</td></tr>
                 <tr><td class="field-name">description</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">image</td><td>string</td><td class="optional">No</td><td>Image path or URL</td></tr>
+                <tr><td class="field-name">color</td><td>string</td><td class="optional">No</td><td>e.g. #FF5733</td></tr>
+                <tr><td class="field-name">shape</td><td>string</td><td class="optional">No</td><td>circle, square, rectangle, hexagon, diamond</td></tr>
                 <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
                 <tr><td class="field-name">category_id</td><td>integer</td><td class="optional">No</td><td>Must exist in categories</td></tr>
             </tbody>
@@ -702,14 +790,14 @@
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
 <span class="key">"name"</span>: <span class="str">"Polo Shirt"</span>,
 <span class="key">"description"</span>: <span class="str">"Regular wash and press"</span>,
-<span class="key">"image"</span>: <span class="null">null</span>,
+<span class="key">"color"</span>: <span class="str">"#3B82F6"</span>,
+<span class="key">"shape"</span>: <span class="str">"circle"</span>,
 <span class="key">"price"</span>: <span class="str">"50.00"</span>,
 <span class="key">"cost"</span>: <span class="str">"20.00"</span>,
 <span class="key">"is_active"</span>: <span class="bool">true</span>,
 <span class="key">"category"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Dry Cleaning"</span>,
-  <span class="key">"color"</span>: <span class="str">"#FF5733"</span>,
   <span class="key">"is_active"</span>: <span class="bool">true</span>
 },
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
