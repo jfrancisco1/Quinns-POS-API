@@ -780,7 +780,7 @@
                 <tr><td class="field-name">cost</td><td>decimal</td><td class="required">Yes</td><td>Cost price</td></tr>
                 <tr><td class="field-name">description</td><td>string</td><td class="optional">No</td><td></td></tr>
                 <tr><td class="field-name">color</td><td>string</td><td class="optional">No</td><td>e.g. #FF5733</td></tr>
-                <tr><td class="field-name">shape</td><td>string</td><td class="optional">No</td><td>circle, square, rectangle, hexagon, diamond</td></tr>
+                <tr><td class="field-name">shape</td><td>string</td><td class="optional">No</td><td>circle, square, star, diamond</td></tr>
                 <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
                 <tr><td class="field-name">category_id</td><td>integer</td><td class="optional">No</td><td>Must exist in categories</td></tr>
             </tbody>
