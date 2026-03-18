@@ -14,7 +14,7 @@ class UpdateOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id'    => ['sometimes', 'integer', 'exists:customers,id'],
+            'customer_id'    => ['sometimes', 'string', 'uuid', 'exists:customers,id'],
             'fulfillmentType' => ['sometimes', 'string', 'in:walk-in,pickup-deliver'],
             'subtotal'       => ['sometimes', 'numeric', 'min:0'],
             'deliveryFee'    => ['sometimes', 'numeric', 'min:0'],

@@ -14,7 +14,7 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id'    => ['required', 'integer', 'exists:customers,id'],
+            'customer_id'    => ['required', 'string', 'uuid', 'exists:customers,id'],
             'fulfillmentType' => ['required', 'string', 'in:walk-in,pickup-deliver'],
             'subtotal'       => ['required', 'numeric', 'min:0'],
             'deliveryFee'    => ['required', 'numeric', 'min:0'],
