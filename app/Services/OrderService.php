@@ -94,7 +94,6 @@ class OrderService extends BaseService
             $order->items()->create([
                 'item_id' => $item['itemId'],
                 'label'   => $item['label'],
-                'unit'    => $item['unit'],
                 'qty'     => $item['qty'],
                 'price'   => $item['price'],
             ]);

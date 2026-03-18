@@ -561,7 +561,6 @@
             <tbody>
                 <tr><td class="field-name">itemId</td><td>string</td><td class="required">Yes</td><td>Snapshot — not validated against items table</td></tr>
                 <tr><td class="field-name">label</td><td>string</td><td class="required">Yes</td><td>Snapshot of item name</td></tr>
-                <tr><td class="field-name">unit</td><td>string</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">qty</td><td>integer</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">price</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
             </tbody>
@@ -590,7 +589,6 @@
     <span class="key">"id"</span>: <span class="num">1</span>,
     <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>,
     <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>,
-    <span class="key">"unit"</span>: <span class="str">"piece"</span>,
     <span class="key">"qty"</span>: <span class="num">2</span>,
     <span class="key">"price"</span>: <span class="num">75</span>
   }

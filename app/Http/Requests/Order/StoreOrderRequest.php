@@ -25,7 +25,6 @@ class StoreOrderRequest extends FormRequest
             'items'          => ['required', 'array', 'min:1'],
             'items.*.itemId' => ['required', 'string'],
             'items.*.label'  => ['required', 'string'],
-            'items.*.unit'   => ['required', 'string'],
             'items.*.qty'    => ['required', 'integer', 'min:1'],
             'items.*.price'  => ['required', 'numeric', 'min:0'],
         ];

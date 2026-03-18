@@ -24,7 +24,6 @@ class UpdateOrderRequest extends FormRequest
             'items'          => ['sometimes', 'array', 'min:1'],
             'items.*.itemId' => ['required_with:items', 'string'],
             'items.*.label'  => ['required_with:items', 'string'],
-            'items.*.unit'   => ['required_with:items', 'string'],
             'items.*.qty'    => ['required_with:items', 'integer', 'min:1'],
             'items.*.price'  => ['required_with:items', 'numeric', 'min:0'],
         ];
