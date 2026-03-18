@@ -17,6 +17,7 @@ class OrderResource extends JsonResource
             'fulfillmentType' => $this->fulfillment_type,
             'subtotal'       => $this->subtotal,
             'deliveryFee'    => $this->delivery_fee,
+            'discountAmount' => $this->discount_amount,
             'total'          => $this->total,
             'createdAt'      => $this->created_at_client?->toISOString() ?? $this->created_at->toISOString(),
             'paymentStatus'  => $this->payment_status,

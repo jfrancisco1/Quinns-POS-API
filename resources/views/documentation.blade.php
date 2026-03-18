@@ -545,6 +545,7 @@
                 <tr><td class="field-name">fulfillmentType</td><td>string</td><td class="required">Yes</td><td>walk-in | pickup-deliver</td></tr>
                 <tr><td class="field-name">subtotal</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">deliveryFee</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">discountAmount</td><td>decimal</td><td class="optional">No</td><td>Discount applied; server recomputes total. Defaults to 0</td></tr>
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
                 <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | pending | paid_gcash | paid_cash (default: unpaid)</td></tr>
@@ -580,6 +581,7 @@
 <span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
 <span class="key">"subtotal"</span>: <span class="num">150</span>,
 <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+<span class="key">"discountAmount"</span>: <span class="num">0</span>,
 <span class="key">"total"</span>: <span class="num">225</span>,
 <span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
 <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,

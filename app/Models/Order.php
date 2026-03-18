@@ -28,12 +28,14 @@ class Order extends Model
         'order_status',
         'tenant_id',
         'branch_id',
+        'discount_amount',
     ];
 
     protected $casts = [
         'created_at_client' => 'datetime',
         'subtotal'          => 'float',
         'delivery_fee'      => 'float',
+        'discount_amount'   => 'float',
         'total'             => 'float',
     ];
 
