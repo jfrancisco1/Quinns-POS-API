@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Api\Owner\TenantController as OwnerTenantController;
 use App\Http\Controllers\Api\Owner\UserController as OwnerUserController;
@@ -33,6 +34,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('items', ItemController::class);
         Route::apiResource('orders', OrderController::class);
         Route::apiResource('expenses', ExpenseController::class);
+        Route::middleware('admin')->group(function () {
+            Route::get('reports/sales', [ReportController::class, 'sales']);
+            Route::get('reports/sales-by-item', [ReportController::class, 'salesByItem']);
+            Route::get('reports/sales-by-payment-type', [ReportController::class, 'salesByPaymentType']);
+        });
     });
 });
 

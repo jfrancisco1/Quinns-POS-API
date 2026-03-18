@@ -29,6 +29,7 @@ class Order extends Model
         'tenant_id',
         'branch_id',
         'discount_amount',
+        'payment_method',
     ];
 
     protected $casts = [
@@ -52,16 +53,6 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
-    }
-
-    public function paymentHistory(): HasMany
-    {
-        return $this->hasMany(PaymentHistory::class);
-    }
-
-    public function orderStatusHistory(): HasMany
-    {
-        return $this->hasMany(OrderStatusHistory::class);
     }
 
     public function resolveRouteBinding($value, $field = null)

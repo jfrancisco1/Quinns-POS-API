@@ -238,6 +238,7 @@
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
     <a href="#expenses">Expenses</a>
+    <a href="#reports">Reports</a>
     <a href="#categories">Categories</a>
     <a href="#items">Items</a>
 </nav>
@@ -662,6 +663,106 @@
 <span class="key">"user_id"</span>: <span class="num">1</span>,
 <span class="key">"created_at"</span>: <span class="str">"2026-03-09 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2026-03-09 00:00:00"</span></div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Reports --}}
+    <section id="reports">
+        <div class="section-title">Reports</div>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/reports/sales</td>
+                    <td class="desc">Sales summary (Gross Sales, Discounts, Net Sales, COGS, Gross Profit)</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/reports/sales-by-item</td>
+                    <td class="desc">Sales breakdown by item — qty sold, revenue, cost, and profit per item</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/reports/sales-by-payment-type</td>
+                    <td class="desc">Sales breakdown by payment type — transaction count, payment amount, and net amount per method</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Query Parameters — all report endpoints</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">period</td><td>string</td><td class="required">Yes</td><td>today | this_week | this_month | this_year | custom</td></tr>
+                <tr><td class="field-name">from</td><td>date</td><td class="optional">custom only</td><td>YYYY-MM-DD — start of range</td></tr>
+                <tr><td class="field-name">to</td><td>date</td><td class="optional">custom only</td><td>YYYY-MM-DD — end of range, must be ≥ from</td></tr>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response — GET /reports/sales</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
+<span class="key">"discounts"</span>: <span class="num">300.00</span>,
+<span class="key">"netSales"</span>: <span class="num">12200.00</span>,
+<span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
+<span class="key">"grossProfit"</span>: <span class="num">7200.00</span></div>
+
+        <div class="fields-title">Response — GET /reports/sales-by-item</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"items"</span>: [
+  {
+    <span class="key">"item_id"</span>: <span class="str">"5"</span>,
+    <span class="key">"label"</span>: <span class="str">"Wash &amp; Fold"</span>,
+    <span class="key">"category"</span>: <span class="str">"Laundry"</span>,
+    <span class="key">"qty"</span>: <span class="num">50</span>,
+    <span class="key">"net_sales"</span>: <span class="num">2500.00</span>,
+    <span class="key">"cost_of_goods"</span>: <span class="num">500.00</span>,
+    <span class="key">"gross_profit"</span>: <span class="num">2000.00</span>
+  }
+],
+<span class="key">"top_items"</span>: [
+  {
+    <span class="key">"item_id"</span>: <span class="str">"5"</span>,
+    <span class="key">"label"</span>: <span class="str">"Wash &amp; Fold"</span>,
+    <span class="key">"category"</span>: <span class="str">"Laundry"</span>,
+    <span class="key">"qty"</span>: <span class="num">50</span>,
+    <span class="key">"net_sales"</span>: <span class="num">2500.00</span>,
+    <span class="key">"cost_of_goods"</span>: <span class="num">500.00</span>,
+    <span class="key">"gross_profit"</span>: <span class="num">2000.00</span>
+  }
+]</div>
+
+        <div class="fields-title">Response — GET /reports/sales-by-payment-type</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"breakdown"</span>: [
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"cash"</span>,
+    <span class="key">"transactions"</span>: <span class="num">80</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">8000.00</span>,
+    <span class="key">"net_amount"</span>: <span class="num">7800.00</span>
+  },
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"gcash"</span>,
+    <span class="key">"transactions"</span>: <span class="num">30</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>,
+    <span class="key">"net_amount"</span>: <span class="num">4400.00</span>
+  }
+]</div>
     </section>
 
     <hr class="divider">
