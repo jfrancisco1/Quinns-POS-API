@@ -714,6 +714,7 @@
         <div class="fields-title">Response — GET /reports/sales</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
 <span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
 <span class="key">"discounts"</span>: <span class="num">300.00</span>,
 <span class="key">"netSales"</span>: <span class="num">12200.00</span>,
@@ -723,6 +724,7 @@
         <div class="fields-title">Response — GET /reports/sales-by-item</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
 <span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"items"</span>: [
   {
     <span class="key">"item_id"</span>: <span class="str">"5"</span>,
@@ -749,6 +751,7 @@
         <div class="fields-title">Response — GET /reports/sales-by-payment-type</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
 <span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"breakdown"</span>: [
   {
     <span class="key">"payment_method"</span>: <span class="str">"cash"</span>,

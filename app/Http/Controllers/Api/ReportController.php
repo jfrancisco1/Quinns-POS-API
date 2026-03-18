@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
@@ -27,9 +29,10 @@ class ReportController extends Controller
         [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
 
         $branchId = $request->integer('branch_id') ?: null;
+        $branch   = $this->resolveBranch($branchId);
         $result   = $this->reportService->salesByItem($from, $to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to], $result));
+        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $result));
     }
 
     public function salesByPaymentType(Request $request): JsonResponse
@@ -44,9 +47,10 @@ class ReportController extends Controller
         [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
 
         $branchId = $request->integer('branch_id') ?: null;
+        $branch   = $this->resolveBranch($branchId);
         $result   = $this->reportService->salesByPaymentType($from, $to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to], $result));
+        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $result));
     }
 
     public function sales(Request $request): JsonResponse
@@ -61,9 +65,37 @@ class ReportController extends Controller
         [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
 
         $branchId = $request->integer('branch_id') ?: null;
+        $branch   = $this->resolveBranch($branchId);
         $summary  = $this->reportService->salesSummary($from, $to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to], $summary));
+        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $summary));
+    }
+
+    private function resolveBranch(?int $branchId): ?array
+    {
+        $user = Auth::user();
+        $role = $user?->role ?? 'admin';
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $branch = Branch::find($user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $branch = Branch::where('id', $branchId)
+                ->where('tenant_id', $user->tenant_id)
+                ->first();
+        } else {
+            return null;
+        }
+
+        if (! $branch) {
+            return null;
+        }
+
+        return [
+            'id'      => $branch->id,
+            'name'    => $branch->name,
+            'address' => $branch->address,
+            'phone'   => $branch->phone,
+        ];
     }
 
     private function resolveDateRange(string $period, ?string $from, ?string $to): array
