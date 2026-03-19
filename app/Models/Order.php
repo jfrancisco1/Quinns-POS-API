@@ -29,7 +29,6 @@ class Order extends Model
         'tenant_id',
         'branch_id',
         'discount_amount',
-        'payment_method',
     ];
 
     protected $casts = [

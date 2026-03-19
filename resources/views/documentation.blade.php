@@ -549,7 +549,7 @@
                 <tr><td class="field-name">discountAmount</td><td>decimal</td><td class="optional">No</td><td>Discount applied; server recomputes total. Defaults to 0</td></tr>
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
-                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | pending | paid_gcash | paid_cash (default: unpaid)</td></tr>
+                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | paid_gcash | paid_cash | paid_others (default: unpaid)</td></tr>
                 <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed (default: in_progress)</td></tr>
                 <tr><td class="field-name">items</td><td>array</td><td class="required">Yes</td><td>At least 1 item required</td></tr>
             </tbody>
@@ -754,16 +754,22 @@
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"breakdown"</span>: [
   {
-    <span class="key">"payment_method"</span>: <span class="str">"cash"</span>,
+    <span class="key">"payment_method"</span>: <span class="str">"paid_cash"</span>,
     <span class="key">"transactions"</span>: <span class="num">80</span>,
     <span class="key">"payment_amount"</span>: <span class="num">8000.00</span>,
     <span class="key">"net_amount"</span>: <span class="num">7800.00</span>
   },
   {
-    <span class="key">"payment_method"</span>: <span class="str">"gcash"</span>,
+    <span class="key">"payment_method"</span>: <span class="str">"paid_gcash"</span>,
     <span class="key">"transactions"</span>: <span class="num">30</span>,
     <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>,
     <span class="key">"net_amount"</span>: <span class="num">4400.00</span>
+  },
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"paid_others"</span>,
+    <span class="key">"transactions"</span>: <span class="num">5</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">750.00</span>,
+    <span class="key">"net_amount"</span>: <span class="num">750.00</span>
   }
 ]</div>
     </section>

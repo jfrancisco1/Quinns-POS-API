@@ -24,7 +24,7 @@ class ReportService extends BaseService
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->leftJoin('categories as c', 'c.id', '=', 'i.category_id')
             ->where('orders.tenant_id', $tenantId)
-            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash'])
+            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
             ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
@@ -69,7 +69,7 @@ class ReportService extends BaseService
 
         $query = Order::query()
             ->where('tenant_id', $tenantId)
-            ->whereIn('payment_status', ['paid_cash', 'paid_gcash'])
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
@@ -80,17 +80,17 @@ class ReportService extends BaseService
 
         $rows = $query
             ->selectRaw('
-                payment_method,
+                payment_status,
                 COUNT(*) as transactions,
                 COALESCE(SUM(subtotal), 0) as payment_amount,
                 COALESCE(SUM(subtotal - COALESCE(discount_amount, 0)), 0) as net_amount
             ')
-            ->groupBy('payment_method')
-            ->orderBy('payment_method')
+            ->groupBy('payment_status')
+            ->orderBy('payment_status')
             ->get();
 
         $breakdown = $rows->map(fn ($row) => [
-            'payment_method'  => $row->payment_method,
+            'payment_method'  => $row->payment_status,
             'transactions'    => (int) $row->transactions,
             'payment_amount'  => (float) $row->payment_amount,
             'net_amount'      => (float) $row->net_amount,
@@ -109,7 +109,7 @@ class ReportService extends BaseService
             ->leftJoin('order_items as oi', 'oi.order_id', '=', 'orders.id')
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->where('orders.tenant_id', $tenantId)
-            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash'])
+            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
             ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
