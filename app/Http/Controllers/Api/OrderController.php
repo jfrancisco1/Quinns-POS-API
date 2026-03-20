@@ -37,10 +37,10 @@ class OrderController extends Controller
 
         $itemMeta = Item::whereIn('id', $order->items->pluck('item_id')->filter()->values())
             ->get(['id', 'color', 'shape'])
-            ->keyBy('id');
+            ->keyBy(fn($i) => (string) $i->id);
 
         $order->items->each(function ($orderItem) use ($itemMeta) {
-            $item = $itemMeta->get((int) $orderItem->item_id);
+            $item = $itemMeta->get((string) $orderItem->item_id);
             $orderItem->item_color = $item?->color;
             $orderItem->item_shape = $item?->shape;
         });
