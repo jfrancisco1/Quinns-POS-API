@@ -54,6 +54,16 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function paymentHistory(): HasMany
+    {
+        return $this->hasMany(PaymentHistory::class);
+    }
+
+    public function orderStatusHistory(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
+
     public function resolveRouteBinding($value, $field = null)
     {
         $user = Auth::user();

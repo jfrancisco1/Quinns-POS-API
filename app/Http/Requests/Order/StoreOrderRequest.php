@@ -21,7 +21,6 @@ class StoreOrderRequest extends FormRequest
             'total'          => ['required', 'numeric', 'min:0'],
             'createdAt'      => ['nullable', 'string'],
             'paymentStatus'  => ['nullable', 'string', 'in:unpaid,paid_gcash,paid_cash,paid_others'],
-            'discountAmount' => ['nullable', 'numeric', 'min:0'],
             'orderStatus'    => ['nullable', 'string', 'in:in_progress,ready,completed'],
             'items'          => ['required', 'array', 'min:1'],
             'items.*.itemId' => ['required', 'string'],

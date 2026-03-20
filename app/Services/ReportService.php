@@ -69,7 +69,7 @@ class ReportService extends BaseService
 
         $query = Order::query()
             ->where('tenant_id', $tenantId)
-            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'unpaid'])
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
@@ -82,8 +82,7 @@ class ReportService extends BaseService
             ->selectRaw('
                 payment_status,
                 COUNT(*) as transactions,
-                COALESCE(SUM(subtotal), 0) as payment_amount,
-                COALESCE(SUM(subtotal - COALESCE(discount_amount, 0)), 0) as net_amount
+                COALESCE(SUM(subtotal), 0) as payment_amount
             ')
             ->groupBy('payment_status')
             ->orderBy('payment_status')
@@ -93,7 +92,6 @@ class ReportService extends BaseService
             'payment_method'  => $row->payment_status,
             'transactions'    => (int) $row->transactions,
             'payment_amount'  => (float) $row->payment_amount,
-            'net_amount'      => (float) $row->net_amount,
         ])->all();
 
         return ['breakdown' => $breakdown];
@@ -120,22 +118,39 @@ class ReportService extends BaseService
 
         $row = $query->selectRaw('
                 COALESCE(SUM(orders.subtotal), 0) as gross_sales,
-                COALESCE(SUM(orders.discount_amount), 0) as discounts,
                 COALESCE(SUM(oi.qty * COALESCE(i.cost, 0)), 0) as cost_of_goods
             ')
             ->first();
 
         $grossSales  = (float) $row->gross_sales;
-        $discounts   = (float) $row->discounts;
-        $netSales    = $grossSales - $discounts;
         $costOfGoods = (float) $row->cost_of_goods;
+
+        $unpaidQuery = Order::query()
+            ->where('tenant_id', $tenantId)
+            ->where('payment_status', 'unpaid')
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $unpaidQuery->where('branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $unpaidQuery->where('branch_id', $branchId);
+        }
+
+        $unpaidRow = $unpaidQuery->selectRaw('
+                COUNT(*) as orders,
+                COALESCE(SUM(subtotal), 0) as gross_sales
+            ')->first();
+
+        $unpaidGross = (float) $unpaidRow->gross_sales;
 
         return [
             'grossSales'  => $grossSales,
-            'discounts'   => $discounts,
-            'netSales'    => $netSales,
             'costOfGoods' => $costOfGoods,
-            'grossProfit' => $netSales - $costOfGoods,
+            'grossProfit' => $grossSales - $costOfGoods,
+            'unpaid'      => [
+                'orders'     => (int) $unpaidRow->orders,
+                'grossSales' => $unpaidGross,
+            ],
         ];
     }
 }

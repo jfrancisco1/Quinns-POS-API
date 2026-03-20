@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
+use App\Models\PaymentHistory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,12 +16,32 @@ class OrderService extends BaseService
         return Order::class;
     }
 
-    public function getAll(): Collection
-    {
-        return $this->tenantScope()
-            ->with(['customer', 'items'])
-            ->latest()
-            ->get();
+    public function getAll(
+        ?string $from = null,
+        ?string $to = null,
+        ?string $paymentStatus = null,
+        ?string $orderStatus = null,
+        ?string $fulfillmentType = null,
+    ): Collection {
+        $query = $this->tenantScope()->with(['customer', 'items'])->latest();
+
+        if ($from && $to) {
+            $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        }
+
+        if ($paymentStatus) {
+            $query->where('payment_status', $paymentStatus);
+        }
+
+        if ($orderStatus) {
+            $query->where('order_status', $orderStatus);
+        }
+
+        if ($fulfillmentType) {
+            $query->where('fulfillment_type', $fulfillmentType);
+        }
+
+        return $query->get();
     }
 
     public function create(array $data): Order
@@ -32,7 +54,6 @@ class OrderService extends BaseService
                 'fulfillment_type'  => $data['fulfillmentType'],
                 'subtotal'          => $data['subtotal'],
                 'delivery_fee'      => $data['deliveryFee'],
-                'discount_amount'   => $data['discountAmount'] ?? 0,
                 'total'             => $data['total'],
                 'created_at_client' => isset($data['createdAt']) ? \Carbon\Carbon::parse($data['createdAt']) : now(),
                 'payment_status'    => $data['paymentStatus'] ?? 'unpaid',
@@ -64,22 +85,46 @@ class OrderService extends BaseService
     {
         $this->authorizeTenant($order);
 
-        $order->update(array_filter([
-            'customer_id'      => $data['customer_id'] ?? null,
-            'fulfillment_type' => $data['fulfillmentType'] ?? null,
-            'subtotal'         => $data['subtotal'] ?? null,
-            'delivery_fee'     => $data['deliveryFee'] ?? null,
-            'discount_amount'  => $data['discountAmount'] ?? null,
-            'total'            => $data['total'] ?? null,
-            'payment_status'   => $data['paymentStatus'] ?? null,
-            'order_status'     => $data['orderStatus'] ?? null,
-        ], fn($v) => $v !== null));
+        return DB::transaction(function () use ($order, $data) {
+            $oldPaymentStatus = $order->payment_status;
+            $oldOrderStatus   = $order->order_status;
 
-        if (isset($data['items'])) {
-            $this->syncItems($order, $data['items']);
-        }
+            $order->update(array_filter([
+                'customer_id'      => $data['customer_id'] ?? null,
+                'fulfillment_type' => $data['fulfillmentType'] ?? null,
+                'subtotal'         => $data['subtotal'] ?? null,
+                'delivery_fee'     => $data['deliveryFee'] ?? null,
+                'total'            => $data['total'] ?? null,
+                'payment_status'   => $data['paymentStatus'] ?? null,
+                'order_status'     => $data['orderStatus'] ?? null,
+            ], fn($v) => $v !== null));
 
-        return $order->load(['customer', 'items']);
+            $order->refresh();
+
+            if (isset($data['paymentStatus']) && $data['paymentStatus'] !== $oldPaymentStatus) {
+                PaymentHistory::create([
+                    'order_id'    => $order->id,
+                    'from_status' => $oldPaymentStatus,
+                    'to_status'   => $data['paymentStatus'],
+                    'changed_at'  => now(),
+                ]);
+            }
+
+            if (isset($data['orderStatus']) && $data['orderStatus'] !== $oldOrderStatus) {
+                OrderStatusHistory::create([
+                    'order_id'    => $order->id,
+                    'from_status' => $oldOrderStatus,
+                    'to_status'   => $data['orderStatus'],
+                    'changed_at'  => now(),
+                ]);
+            }
+
+            if (isset($data['items'])) {
+                $this->syncItems($order, $data['items']);
+            }
+
+            return $order->load(['customer', 'items']);
+        });
     }
 
     public function delete(Order $order): void

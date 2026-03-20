@@ -510,8 +510,8 @@
             <tbody>
                 <tr>
                     <td><span class="method get">GET</span></td>
-                    <td class="path">/orders</td>
-                    <td class="desc">List all orders (with items)</td>
+                    <td class="path">/orders?from=YYYY-MM-DD&amp;to=YYYY-MM-DD</td>
+                    <td class="desc">List all orders (with items); optionally filter by date range</td>
                 </tr>
                 <tr>
                     <td><span class="method post">POST</span></td>
@@ -536,6 +536,20 @@
             </tbody>
         </table>
 
+        <div class="fields-title">GET /orders — Query Parameters</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">from</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD — start of date range (inclusive). Must be used with <code>to</code></td></tr>
+                <tr><td class="field-name">to</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD — end of date range (inclusive). Must be used with <code>from</code></td></tr>
+                <tr><td class="field-name">payment_status</td><td>string</td><td class="optional">No</td><td>Filter by payment status. Values: <code>unpaid</code>, <code>paid</code></td></tr>
+                <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>in_progress</code>, <code>completed</code></td></tr>
+                <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
+            </tbody>
+        </table>
+
         <div class="fields-title">Order Fields</div>
         <table class="fields-table">
             <thead>
@@ -546,7 +560,6 @@
                 <tr><td class="field-name">fulfillmentType</td><td>string</td><td class="required">Yes</td><td>walk-in | pickup-deliver</td></tr>
                 <tr><td class="field-name">subtotal</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">deliveryFee</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
-                <tr><td class="field-name">discountAmount</td><td>decimal</td><td class="optional">No</td><td>Discount applied; server recomputes total. Defaults to 0</td></tr>
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
                 <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | paid_gcash | paid_cash | paid_others (default: unpaid)</td></tr>
@@ -582,7 +595,6 @@
 <span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
 <span class="key">"subtotal"</span>: <span class="num">150</span>,
 <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
-<span class="key">"discountAmount"</span>: <span class="num">0</span>,
 <span class="key">"total"</span>: <span class="num">225</span>,
 <span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
 <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
@@ -717,10 +729,12 @@
 <span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
-<span class="key">"discounts"</span>: <span class="num">300.00</span>,
-<span class="key">"netSales"</span>: <span class="num">12200.00</span>,
 <span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
-<span class="key">"grossProfit"</span>: <span class="num">7200.00</span></div>
+<span class="key">"grossProfit"</span>: <span class="num">7500.00</span>,
+<span class="key">"unpaid"</span>: {
+  <span class="key">"orders"</span>: <span class="num">3</span>,
+  <span class="key">"grossSales"</span>: <span class="num">1500.00</span>
+}</div>
 
         <div class="fields-title">Response — GET /reports/sales-by-item</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
@@ -757,20 +771,22 @@
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_cash"</span>,
     <span class="key">"transactions"</span>: <span class="num">80</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">8000.00</span>,
-    <span class="key">"net_amount"</span>: <span class="num">7800.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">8000.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_gcash"</span>,
     <span class="key">"transactions"</span>: <span class="num">30</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>,
-    <span class="key">"net_amount"</span>: <span class="num">4400.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_others"</span>,
     <span class="key">"transactions"</span>: <span class="num">5</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">750.00</span>,
-    <span class="key">"net_amount"</span>: <span class="num">750.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">750.00</span>
+  },
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"unpaid"</span>,
+    <span class="key">"transactions"</span>: <span class="num">3</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">1500.00</span>
   }
 ]</div>
     </section>

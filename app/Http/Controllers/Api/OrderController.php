@@ -21,7 +21,13 @@ class OrderController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $orders = $this->orderService->getAll();
+        $from            = request()->query('from');
+        $to              = request()->query('to');
+        $paymentStatus   = request()->query('payment_status');
+        $orderStatus     = request()->query('order_status');
+        $fulfillmentType = request()->query('fulfillment_type');
+
+        $orders = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType);
         $this->enrichItemMeta($orders->pluck('items')->flatten());
         return OrderResource::collection($orders);
     }

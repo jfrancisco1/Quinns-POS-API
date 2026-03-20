@@ -20,7 +20,6 @@ class UpdateOrderRequest extends FormRequest
             'deliveryFee'    => ['sometimes', 'numeric', 'min:0'],
             'total'          => ['sometimes', 'numeric', 'min:0'],
             'paymentStatus'  => ['sometimes', 'string', 'in:unpaid,paid_gcash,paid_cash,paid_others'],
-            'discountAmount' => ['nullable', 'sometimes', 'numeric', 'min:0'],
             'orderStatus'    => ['sometimes', 'string', 'in:in_progress,ready,completed'],
             'items'          => ['sometimes', 'array', 'min:1'],
             'items.*.itemId' => ['required_with:items', 'string'],
