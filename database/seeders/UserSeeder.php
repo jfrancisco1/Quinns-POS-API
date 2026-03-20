@@ -46,6 +46,13 @@ class UserSeeder extends Seeder
                 'role'        => 'delivery',
                 'branch_name' => 'Main Branch',
             ],
+            [
+                'name' => 'Cool Dev',
+                'username' => 'quinns.main.dev',
+                'password' => 'dev0701',
+                'role' => 'staff',
+                'branch_name' => 'Main Branch',
+            ],
         ];
         // -------------------------------------------------------
         // END CONFIG
@@ -90,7 +97,9 @@ class UserSeeder extends Seeder
             $summary[] = [$u['username'], $u['password'], $u['role'], $u['branch_name'] ?? 'all branches'];
         }
 
-        DB::table('users')->insert($rows);
+        DB::table('users')->upsert($rows, ['username'], [
+            'name', 'password', 'role', 'is_active', 'tenant_id', 'branch_id', 'updated_at',
+        ]);
 
         $this->command->info("Users seeded for tenant: {$tenant->name}");
         $this->command->newLine();
