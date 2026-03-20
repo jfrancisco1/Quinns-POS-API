@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\Item;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +33,19 @@ class OrderController extends Controller
 
     public function show(Order $order): OrderResource
     {
-        return new OrderResource($order->load(['customer', 'items', 'branch']));
+        $order->load(['customer', 'items', 'branch']);
+
+        $itemMeta = Item::whereIn('id', $order->items->pluck('item_id')->filter()->values())
+            ->get(['id', 'color', 'shape'])
+            ->keyBy('id');
+
+        $order->items->each(function ($orderItem) use ($itemMeta) {
+            $item = $itemMeta->get((int) $orderItem->item_id);
+            $orderItem->item_color = $item?->color;
+            $orderItem->item_shape = $item?->shape;
+        });
+
+        return new OrderResource($order);
     }
 
     public function update(UpdateOrderRequest $request, Order $order): OrderResource

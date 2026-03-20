@@ -593,7 +593,9 @@
     <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>,
     <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>,
     <span class="key">"qty"</span>: <span class="num">2</span>,
-    <span class="key">"price"</span>: <span class="num">75</span>
+    <span class="key">"price"</span>: <span class="num">75</span>,
+    <span class="key">"color"</span>: <span class="str">"white"</span>,
+    <span class="key">"shape"</span>: <span class="str">"round"</span>
   }
 ]</div>
     </section>
