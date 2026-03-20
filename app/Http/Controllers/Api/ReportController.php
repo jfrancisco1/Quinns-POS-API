@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Services\ReportService;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,55 +19,46 @@ class ReportController extends Controller
     public function salesByItem(Request $request): JsonResponse
     {
         $request->validate([
-            'period'    => ['required', 'in:today,this_week,this_month,this_year,custom'],
-            'from'      => ['required_if:period,custom', 'date'],
-            'to'        => ['required_if:period,custom', 'date', 'after_or_equal:from'],
+            'from'      => ['required', 'date'],
+            'to'        => ['required', 'date', 'after_or_equal:from'],
             'branch_id' => ['nullable', 'integer'],
         ]);
 
-        [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
-
         $branchId = $request->integer('branch_id') ?: null;
         $branch   = $this->resolveBranch($branchId);
-        $result   = $this->reportService->salesByItem($from, $to, $branchId);
+        $result   = $this->reportService->salesByItem($request->from, $request->to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $result));
+        return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $result));
     }
 
     public function salesByPaymentType(Request $request): JsonResponse
     {
         $request->validate([
-            'period'    => ['required', 'in:today,this_week,this_month,this_year,custom'],
-            'from'      => ['required_if:period,custom', 'date'],
-            'to'        => ['required_if:period,custom', 'date', 'after_or_equal:from'],
+            'from'      => ['required', 'date'],
+            'to'        => ['required', 'date', 'after_or_equal:from'],
             'branch_id' => ['nullable', 'integer'],
         ]);
 
-        [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
-
         $branchId = $request->integer('branch_id') ?: null;
         $branch   = $this->resolveBranch($branchId);
-        $result   = $this->reportService->salesByPaymentType($from, $to, $branchId);
+        $result   = $this->reportService->salesByPaymentType($request->from, $request->to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $result));
+        return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $result));
     }
 
     public function sales(Request $request): JsonResponse
     {
         $request->validate([
-            'period'    => ['required', 'in:today,this_week,this_month,this_year,custom'],
-            'from'      => ['required_if:period,custom', 'date'],
-            'to'        => ['required_if:period,custom', 'date', 'after_or_equal:from'],
+            'from'      => ['required', 'date'],
+            'to'        => ['required', 'date', 'after_or_equal:from'],
             'branch_id' => ['nullable', 'integer'],
         ]);
 
-        [$from, $to] = $this->resolveDateRange($request->period, $request->from, $request->to);
-
         $branchId = $request->integer('branch_id') ?: null;
         $branch   = $this->resolveBranch($branchId);
-        $summary  = $this->reportService->salesSummary($from, $to, $branchId);
+        $summary  = $this->reportService->salesSummary($request->from, $request->to, $branchId);
 
-        return response()->json(array_merge(['from' => $from, 'to' => $to, 'branch' => $branch], $summary));
+        return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $summary));
     }
 
     private function resolveBranch(?int $branchId): ?array
@@ -98,16 +88,4 @@ class ReportController extends Controller
         ];
     }
 
-    private function resolveDateRange(string $period, ?string $from, ?string $to): array
-    {
-        $now = Carbon::now();
-
-        return match ($period) {
-            'today'      => [$now->toDateString(), $now->toDateString()],
-            'this_week'  => [$now->startOfWeek()->toDateString(), $now->copy()->endOfWeek()->toDateString()],
-            'this_month' => [$now->startOfMonth()->toDateString(), $now->copy()->endOfMonth()->toDateString()],
-            'this_year'  => [$now->startOfYear()->toDateString(), $now->copy()->endOfYear()->toDateString()],
-            'custom'     => [$from, $to],
-        };
-    }
 }

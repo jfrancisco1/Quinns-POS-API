@@ -704,9 +704,8 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">period</td><td>string</td><td class="required">Yes</td><td>today | this_week | this_month | this_year | custom</td></tr>
-                <tr><td class="field-name">from</td><td>date</td><td class="optional">custom only</td><td>YYYY-MM-DD — start of range</td></tr>
-                <tr><td class="field-name">to</td><td>date</td><td class="optional">custom only</td><td>YYYY-MM-DD — end of range, must be ≥ from</td></tr>
+                <tr><td class="field-name">from</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD — start of range (same as to for a single day)</td></tr>
+                <tr><td class="field-name">to</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD — end of range, must be ≥ from</td></tr>
                 <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
