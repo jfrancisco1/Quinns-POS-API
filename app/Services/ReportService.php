@@ -95,7 +95,17 @@ class ReportService extends BaseService
             'payment_amount'  => (float) $row->payment_amount,
         ])->all();
 
-        return ['breakdown' => $breakdown];
+        $unpaidRow = $rows->firstWhere('payment_status', 'unpaid');
+
+        $unpaid = [
+            'transactions' => $unpaidRow ? (int) $unpaidRow->transactions : 0,
+            'amount'       => $unpaidRow ? (float) $unpaidRow->payment_amount : 0.0,
+        ];
+
+        return [
+            'breakdown' => $breakdown,
+            'unpaid'    => $unpaid,
+        ];
     }
 
     public function salesSummary(string $from, string $to, ?int $branchId = null): array

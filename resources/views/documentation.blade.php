@@ -801,7 +801,11 @@
     <span class="key">"transactions"</span>: <span class="num">3</span>,
     <span class="key">"payment_amount"</span>: <span class="num">1500.00</span>
   }
-]</div>
+],
+<span class="key">"unpaid"</span>: {
+  <span class="key">"transactions"</span>: <span class="num">3</span>,
+  <span class="key">"amount"</span>: <span class="num">1500.00</span>
+}</div>
     </section>
 
     <hr class="divider">
