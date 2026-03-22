@@ -729,8 +729,13 @@
 <span class="key">"to"</span>: <span class="str">"2026-03-31 23:59:59"</span>,
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
+<span class="key">"netSales"</span>: <span class="num">12500.00</span>,
+<span class="comm">// netSales equals grossSales for now (reserved for future discount deductions)</span>
 <span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
 <span class="key">"grossProfit"</span>: <span class="num">7500.00</span>,
+<span class="key">"expenses"</span>: <span class="num">1200.00</span>,
+<span class="key">"netProfit"</span>: <span class="num">11300.00</span>,
+<span class="comm">// netProfit = netSales - expenses</span>
 <span class="key">"unpaid"</span>: {
   <span class="key">"orders"</span>: <span class="num">3</span>,
   <span class="key">"grossSales"</span>: <span class="num">1500.00</span>

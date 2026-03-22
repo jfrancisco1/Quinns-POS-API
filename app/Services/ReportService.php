@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -153,13 +154,29 @@ class ReportService extends BaseService
 
         $unpaidGross = (float) $unpaidRow->gross_sales;
 
-        $series   = $this->buildSeries($from, $to, $diffDays, $tenantId, $role, $user, $branchId);
-        $groupBy  = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
+        $expenseQuery = Expense::query()
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('expense_date', [$from, $to]);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $expenseQuery->where('branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $expenseQuery->where('branch_id', $branchId);
+        }
+
+        $totalExpenses = (float) $expenseQuery->sum('amount');
+
+        $netSales  = $grossSales;
+        $series    = $this->buildSeries($from, $to, $diffDays, $tenantId, $role, $user, $branchId);
+        $groupBy   = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
 
         return [
             'grossSales'  => $grossSales,
+            'netSales'    => $netSales,
             'costOfGoods' => $costOfGoods,
             'grossProfit' => $grossSales - $costOfGoods,
+            'expenses'    => $totalExpenses,
+            'netProfit'   => $netSales - $totalExpenses,
             'unpaid'      => [
                 'orders'     => (int) $unpaidRow->orders,
                 'grossSales' => $unpaidGross,
