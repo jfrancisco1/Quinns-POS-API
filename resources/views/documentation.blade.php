@@ -718,15 +718,15 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">from</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD — start of range (same as to for a single day)</td></tr>
-                <tr><td class="field-name">to</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD — end of range, must be ≥ from</td></tr>
+                <tr><td class="field-name">from</td><td>datetime</td><td class="required">Yes</td><td>YYYY-MM-DD or YYYY-MM-DD HH:MM:SS — start of range; defaults to 00:00:00 when no time given</td></tr>
+                <tr><td class="field-name">to</td><td>datetime</td><td class="required">Yes</td><td>YYYY-MM-DD or YYYY-MM-DD HH:MM:SS — end of range, must be ≥ from; defaults to 23:59:59 when no time given</td></tr>
                 <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
 
         <div class="fields-title">Response — GET /reports/sales</div>
-        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
-<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01 00:00:00"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31 23:59:59"</span>,
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
 <span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
@@ -734,7 +734,15 @@
 <span class="key">"unpaid"</span>: {
   <span class="key">"orders"</span>: <span class="num">3</span>,
   <span class="key">"grossSales"</span>: <span class="num">1500.00</span>
-}</div>
+},
+<span class="key">"group_by"</span>: <span class="str">"day"</span>,
+<span class="comm">// "hour" when from == to (single day), "day" when range ≤ 31 days, "month" when range > 31 days</span>
+<span class="key">"series"</span>: [
+  { <span class="key">"label"</span>: <span class="str">"2026-03-01"</span>, <span class="key">"gross_sales"</span>: <span class="num">400.00</span> },
+  { <span class="key">"label"</span>: <span class="str">"2026-03-02"</span>, <span class="key">"gross_sales"</span>: <span class="num">750.00</span> }
+  <span class="comm">// label format: "HH:00" (hour), "YYYY-MM-DD" (day), "YYYY-MM" (month)</span>
+  <span class="comm">// zero-filled — all periods in range are included even if no sales</span>
+]</div>
 
         <div class="fields-title">Response — GET /reports/sales-by-item</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,

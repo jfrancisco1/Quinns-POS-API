@@ -58,7 +58,11 @@ class ReportController extends Controller
         $branch   = $this->resolveBranch($branchId);
         $summary  = $this->reportService->salesSummary($request->from, $request->to, $branchId);
 
-        return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $summary));
+        return response()->json(array_merge([
+            'from'   => $request->from . ' 00:00:00',
+            'to'     => $request->to . ' 23:59:59',
+            'branch' => $branch,
+        ], $summary));
     }
 
     private function resolveBranch(?int $branchId): ?array

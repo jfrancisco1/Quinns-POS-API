@@ -103,27 +103,37 @@ class ReportService extends BaseService
         $tenantId  = $user?->tenant_id ?? 1;
         $role      = $user?->role ?? 'admin';
 
-        $query = Order::query()
-            ->leftJoin('order_items as oi', 'oi.order_id', '=', 'orders.id')
+        $fromDate = new \DateTimeImmutable($from);
+        $toDate   = new \DateTimeImmutable($to);
+        $diffDays = (int) $fromDate->diff($toDate)->days;
+
+        $salesQuery = Order::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $salesQuery->where('branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $salesQuery->where('branch_id', $branchId);
+        }
+
+        $grossSales = (float) $salesQuery->sum('subtotal');
+
+        $cogQuery = Order::query()
+            ->join('order_items as oi', 'oi.order_id', '=', 'orders.id')
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->where('orders.tenant_id', $tenantId)
             ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
             ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
-            $query->where('orders.branch_id', $user->branch_id);
+            $cogQuery->where('orders.branch_id', $user->branch_id);
         } elseif ($role === 'admin' && $branchId !== null) {
-            $query->where('orders.branch_id', $branchId);
+            $cogQuery->where('orders.branch_id', $branchId);
         }
 
-        $row = $query->selectRaw('
-                COALESCE(SUM(orders.subtotal), 0) as gross_sales,
-                COALESCE(SUM(oi.qty * COALESCE(i.cost, 0)), 0) as cost_of_goods
-            ')
-            ->first();
-
-        $grossSales  = (float) $row->gross_sales;
-        $costOfGoods = (float) $row->cost_of_goods;
+        $costOfGoods = (float) $cogQuery->sum(DB::raw('oi.qty * COALESCE(i.cost, 0)'));
 
         $unpaidQuery = Order::query()
             ->where('tenant_id', $tenantId)
@@ -143,6 +153,9 @@ class ReportService extends BaseService
 
         $unpaidGross = (float) $unpaidRow->gross_sales;
 
+        $series   = $this->buildSeries($from, $to, $diffDays, $tenantId, $role, $user, $branchId);
+        $groupBy  = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
+
         return [
             'grossSales'  => $grossSales,
             'costOfGoods' => $costOfGoods,
@@ -151,6 +164,91 @@ class ReportService extends BaseService
                 'orders'     => (int) $unpaidRow->orders,
                 'grossSales' => $unpaidGross,
             ],
+            'group_by'    => $groupBy,
+            'series'      => $series,
         ];
+    }
+
+    private function buildSeries(string $from, string $to, int $diffDays, int $tenantId, string $role, $user, ?int $branchId): array
+    {
+        $seriesQuery = Order::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $seriesQuery->where('branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $seriesQuery->where('branch_id', $branchId);
+        }
+
+        if ($diffDays === 0) {
+            // Single day → group by hour
+            $rows = $seriesQuery
+                ->selectRaw("TO_CHAR(created_at, 'HH24') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+                ->groupByRaw("TO_CHAR(created_at, 'HH24')")
+                ->orderByRaw("TO_CHAR(created_at, 'HH24')")
+                ->get();
+
+            $map = $rows->keyBy('label');
+
+            return collect(range(0, 23))->map(function ($h) use ($map) {
+                $key = str_pad($h, 2, '0', STR_PAD_LEFT);
+                return [
+                    'label'      => $key . ':00',
+                    'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+                ];
+            })->all();
+        }
+
+        if ($diffDays <= 31) {
+            // Week or month range → group by date
+            $rows = $seriesQuery
+                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+                ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
+                ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
+                ->get();
+
+            $map    = $rows->keyBy('label');
+            $start  = new \DateTimeImmutable($from);
+            $end    = new \DateTimeImmutable($to);
+            $series = [];
+            $cursor = $start;
+
+            while ($cursor <= $end) {
+                $key      = $cursor->format('Y-m-d');
+                $series[] = [
+                    'label'      => $key,
+                    'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+                ];
+                $cursor = $cursor->modify('+1 day');
+            }
+
+            return $series;
+        }
+
+        // Year+ range → group by month
+        $rows = $seriesQuery
+            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+            ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM')")
+            ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM')")
+            ->get();
+
+        $map    = $rows->keyBy('label');
+        $start  = new \DateTimeImmutable($from);
+        $end    = new \DateTimeImmutable($to);
+        $series = [];
+        $cursor = new \DateTimeImmutable($start->format('Y-m-01'));
+
+        while ($cursor <= $end) {
+            $key      = $cursor->format('Y-m');
+            $series[] = [
+                'label'      => $key,
+                'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+            ];
+            $cursor = $cursor->modify('+1 month');
+        }
+
+        return $series;
     }
 }
