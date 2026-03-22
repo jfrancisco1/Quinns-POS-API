@@ -10,7 +10,6 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrderController extends Controller
 {
@@ -19,7 +18,7 @@ class OrderController extends Controller
     ) {
     }
 
-    public function index(): AnonymousResourceCollection
+    public function index(): JsonResponse
     {
         $from            = request()->query('from');
         $to              = request()->query('to');
@@ -27,9 +26,16 @@ class OrderController extends Controller
         $orderStatus     = request()->query('order_status');
         $fulfillmentType = request()->query('fulfillment_type');
 
-        $orders = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType);
-        $this->enrichItemMeta($orders->pluck('items')->flatten());
-        return OrderResource::collection($orders);
+        $paginator = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType);
+        $this->enrichItemMeta($paginator->getCollection()->pluck('items')->flatten());
+
+        return response()->json([
+            'data'       => OrderResource::collection($paginator->getCollection()),
+            'nextCursor' => $paginator->nextCursor()?->encode(),
+            'prevCursor' => $paginator->previousCursor()?->encode(),
+            'hasMore'    => $paginator->hasMorePages(),
+            'perPage'    => $paginator->perPage(),
+        ]);
     }
 
     public function store(StoreOrderRequest $request): OrderResource

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\PaymentHistory;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -22,8 +22,8 @@ class OrderService extends BaseService
         ?string $paymentStatus = null,
         ?string $orderStatus = null,
         ?string $fulfillmentType = null,
-    ): Collection {
-        $query = $this->tenantScope()->with(['customer', 'items'])->latest();
+    ): CursorPaginator {
+        $query = $this->tenantScope()->with(['customer', 'items'])->orderBy('created_at', 'desc')->orderBy('id', 'desc');
 
         if ($from && $to) {
             $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
@@ -41,7 +41,7 @@ class OrderService extends BaseService
             $query->where('fulfillment_type', $fulfillmentType);
         }
 
-        return $query->get();
+        return $query->cursorPaginate(30);
     }
 
     public function create(array $data): Order

@@ -511,7 +511,7 @@
                 <tr>
                     <td><span class="method get">GET</span></td>
                     <td class="path">/orders?from=YYYY-MM-DD&amp;to=YYYY-MM-DD</td>
-                    <td class="desc">List all orders (with items); optionally filter by date range</td>
+                    <td class="desc">List orders (cursor-paginated, 30 per page); optionally filter by date range and status</td>
                 </tr>
                 <tr>
                     <td><span class="method post">POST</span></td>
@@ -547,6 +547,7 @@
                 <tr><td class="field-name">payment_status</td><td>string</td><td class="optional">No</td><td>Filter by payment status. Values: <code>unpaid</code>, <code>paid</code></td></tr>
                 <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>in_progress</code>, <code>completed</code></td></tr>
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
+                <tr><td class="field-name">cursor</td><td>string</td><td class="optional">No</td><td>Opaque cursor string returned in <code>nextCursor</code> / <code>prevCursor</code> of a previous response. Omit for the first page.</td></tr>
             </tbody>
         </table>
 
@@ -581,35 +582,27 @@
             </tbody>
         </table>
 
-        <div class="fields-title">Response</div>
-        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
-<span class="key">"orderNumber"</span>: <span class="str">"ORD-00001"</span>,
-<span class="key">"customer_id"</span>: <span class="num">1</span>,
-<span class="key">"customer"</span>: {
-  <span class="key">"mobile"</span>: <span class="str">"09171234567"</span>,
-  <span class="key">"nickname"</span>: <span class="str">"Maria Santos"</span>,
-  <span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
-  <span class="key">"notes"</span>: <span class="str">""</span>,
-  <span class="key">"deliveryFee"</span>: <span class="num">75</span>
-},
-<span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
-<span class="key">"subtotal"</span>: <span class="num">150</span>,
-<span class="key">"deliveryFee"</span>: <span class="num">75</span>,
-<span class="key">"total"</span>: <span class="num">225</span>,
-<span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
-<span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
-<span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span>,
-<span class="key">"items"</span>: [
+        <div class="fields-title">GET /orders Response (cursor-paginated)</div>
+        <div class="code-block"><span class="key">"data"</span>: [
   {
-    <span class="key">"id"</span>: <span class="num">1</span>,
-    <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>,
-    <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>,
-    <span class="key">"qty"</span>: <span class="num">2</span>,
-    <span class="key">"price"</span>: <span class="num">75</span>,
-    <span class="key">"color"</span>: <span class="str">"white"</span>,
-    <span class="key">"shape"</span>: <span class="str">"round"</span>
+    <span class="key">"id"</span>: <span class="str">"uuid-..."</span>,
+    <span class="key">"orderNumber"</span>: <span class="str">"ORD-00001"</span>,
+    <span class="key">"customer_id"</span>: <span class="num">1</span>,
+    <span class="key">"customer"</span>: { <span class="key">"mobile"</span>: <span class="str">"09171234567"</span>, <span class="key">"nickname"</span>: <span class="str">"Maria Santos"</span>, ... },
+    <span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
+    <span class="key">"subtotal"</span>: <span class="num">150</span>,
+    <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+    <span class="key">"total"</span>: <span class="num">225</span>,
+    <span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
+    <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
+    <span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span>,
+    <span class="key">"items"</span>: [ { <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>, <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>, <span class="key">"qty"</span>: <span class="num">2</span>, <span class="key">"price"</span>: <span class="num">75</span>, <span class="key">"color"</span>: <span class="str">"white"</span>, <span class="key">"shape"</span>: <span class="str">"round"</span> } ]
   }
-]</div>
+],
+<span class="key">"nextCursor"</span>: <span class="str">"eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0xMCIsImlkIjoiLi4uIn0"</span>,
+<span class="key">"prevCursor"</span>: <span class="str">null</span>,
+<span class="key">"hasMore"</span>: <span class="bool">true</span>,
+<span class="key">"perPage"</span>: <span class="num">30</span></div>
     </section>
 
     <hr class="divider">
