@@ -18,16 +18,22 @@ class CategoryService extends BaseService
         $user = Auth::user();
         $tenant_id = $user?->tenant_id ?? 1;
 
-        return Category::where('tenant_id', $tenant_id)->latest()->get();
+        return Category::where('tenant_id', $tenant_id)->orderBy('sort_order')->orderBy('id')->get();
     }
 
     public function create(array $data): Category
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? 1;
+
+        if (!isset($data['sort_order'])) {
+            $max = Category::where('tenant_id', $tenantId)->max('sort_order');
+            $data['sort_order'] = ($max ?? -1) + 1;
+        }
 
         return Category::create([
             ...$data,
-            'tenant_id' => $user->tenant_id ?? 1,
+            'tenant_id' => $tenantId,
         ]);
     }
 

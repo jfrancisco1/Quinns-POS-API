@@ -852,6 +852,7 @@
             <tbody>
                 <tr><td class="field-name">name</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
+                <tr><td class="field-name">sort_order</td><td>integer</td><td class="optional">No</td><td>Display priority; lower = first. Defaults to 0</td></tr>
             </tbody>
         </table>
 
@@ -859,6 +860,7 @@
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
 <span class="key">"name"</span>: <span class="str">"Dry Cleaning"</span>,
 <span class="key">"is_active"</span>: <span class="bool">true</span>,
+<span class="key">"sort_order"</span>: <span class="num">0</span>,
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
     </section>

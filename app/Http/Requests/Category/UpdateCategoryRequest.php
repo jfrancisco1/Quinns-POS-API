@@ -15,8 +15,9 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['sometimes', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($this->category)],
-            'is_active' => ['boolean'],
+            'name'       => ['sometimes', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($this->category)],
+            'is_active'  => ['boolean'],
+            'sort_order' => ['integer', 'min:0'],
         ];
     }
 }

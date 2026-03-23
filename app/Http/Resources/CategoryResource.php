@@ -13,6 +13,7 @@ class CategoryResource extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'is_active'  => $this->is_active,
+            'sort_order' => $this->sort_order,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];
