@@ -186,7 +186,7 @@ class ReportService extends BaseService
             'costOfGoods' => $costOfGoods,
             'grossProfit' => $grossSales - $costOfGoods,
             'expenses'    => $totalExpenses,
-            'netProfit'   => $netSales - $totalExpenses,
+            'netProfit'   => $grossSales - $costOfGoods - $totalExpenses,
             'unpaid'      => [
                 'orders'     => (int) $unpaidRow->orders,
                 'grossSales' => $unpaidGross,
