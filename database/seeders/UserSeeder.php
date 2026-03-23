@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
                 'name' => 'Cool Dev',
                 'username' => 'quinns.main.dev',
                 'password' => 'dev0701',
-                'role' => 'staff',
+                'role' => 'developer',
                 'branch_name' => 'Main Branch',
             ],
         ];
