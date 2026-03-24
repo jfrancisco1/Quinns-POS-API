@@ -207,7 +207,6 @@ class ReportService extends BaseService
     {
         $seriesQuery = Order::query()
             ->where('tenant_id', $tenantId)
-            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
@@ -219,7 +218,7 @@ class ReportService extends BaseService
         if ($diffDays === 0) {
             // Single day → group by hour
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(created_at, 'HH24') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+                ->selectRaw("TO_CHAR(created_at, 'HH24') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
                 ->groupByRaw("TO_CHAR(created_at, 'HH24')")
                 ->orderByRaw("TO_CHAR(created_at, 'HH24')")
                 ->get();
@@ -229,8 +228,8 @@ class ReportService extends BaseService
             return collect(range(0, 23))->map(function ($h) use ($map) {
                 $key = str_pad($h, 2, '0', STR_PAD_LEFT);
                 return [
-                    'label'      => $key . ':00',
-                    'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+                    'label'     => $key . ':00',
+                    'net_sales' => (float) ($map->get($key)?->net_sales ?? 0),
                 ];
             })->all();
         }
@@ -238,7 +237,7 @@ class ReportService extends BaseService
         if ($diffDays <= 31) {
             // Week or month range → group by date
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
                 ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
                 ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
                 ->get();
@@ -252,8 +251,8 @@ class ReportService extends BaseService
             while ($cursor <= $end) {
                 $key      = $cursor->format('Y-m-d');
                 $series[] = [
-                    'label'      => $key,
-                    'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+                    'label'     => $key,
+                    'net_sales' => (float) ($map->get($key)?->net_sales ?? 0),
                 ];
                 $cursor = $cursor->modify('+1 day');
             }
@@ -263,7 +262,7 @@ class ReportService extends BaseService
 
         // Year+ range → group by month
         $rows = $seriesQuery
-            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as label, COALESCE(SUM(subtotal), 0) as gross_sales")
+            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
             ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM')")
             ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM')")
             ->get();
@@ -277,8 +276,8 @@ class ReportService extends BaseService
         while ($cursor <= $end) {
             $key      = $cursor->format('Y-m');
             $series[] = [
-                'label'      => $key,
-                'gross_sales' => (float) ($map->get($key)?->gross_sales ?? 0),
+                'label'     => $key,
+                'net_sales' => (float) ($map->get($key)?->net_sales ?? 0),
             ];
             $cursor = $cursor->modify('+1 month');
         }

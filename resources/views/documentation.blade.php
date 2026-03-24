@@ -742,8 +742,8 @@
 <span class="key">"group_by"</span>: <span class="str">"day"</span>,
 <span class="comm">// "hour" when from == to (single day), "day" when range ≤ 31 days, "month" when range > 31 days</span>
 <span class="key">"series"</span>: [
-  { <span class="key">"label"</span>: <span class="str">"2026-03-01"</span>, <span class="key">"gross_sales"</span>: <span class="num">400.00</span> },
-  { <span class="key">"label"</span>: <span class="str">"2026-03-02"</span>, <span class="key">"gross_sales"</span>: <span class="num">750.00</span> }
+  { <span class="key">"label"</span>: <span class="str">"2026-03-01"</span>, <span class="key">"net_sales"</span>: <span class="num">400.00</span> },
+  { <span class="key">"label"</span>: <span class="str">"2026-03-02"</span>, <span class="key">"net_sales"</span>: <span class="num">750.00</span> }
   <span class="comm">// label format: "HH:00" (hour), "YYYY-MM-DD" (day), "YYYY-MM" (month)</span>
   <span class="comm">// zero-filled — all periods in range are included even if no sales</span>
 ]</div>
