@@ -722,17 +722,23 @@
 <span class="key">"to"</span>: <span class="str">"2026-03-31 23:59:59"</span>,
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
 <span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
-<span class="key">"netSales"</span>: <span class="num">12500.00</span>,
-<span class="comm">// netSales equals grossSales for now (reserved for future discount deductions)</span>
+<span class="comm">// grossSales = sum of subtotal for ALL orders (paid + unpaid)</span>
+<span class="key">"discounts"</span>: <span class="num">500.00</span>,
+<span class="comm">// discounts = sum of discount_amount for all orders</span>
+<span class="key">"netSales"</span>: <span class="num">12000.00</span>,
+<span class="comm">// netSales = grossSales - discounts</span>
 <span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
-<span class="key">"grossProfit"</span>: <span class="num">7500.00</span>,
+<span class="key">"grossProfit"</span>: <span class="num">7000.00</span>,
+<span class="comm">// grossProfit = netSales - costOfGoods</span>
 <span class="key">"expenses"</span>: <span class="num">1200.00</span>,
-<span class="key">"netProfit"</span>: <span class="num">11300.00</span>,
-<span class="comm">// netProfit = netSales - expenses</span>
-<span class="key">"unpaid"</span>: {
-  <span class="key">"orders"</span>: <span class="num">3</span>,
-  <span class="key">"grossSales"</span>: <span class="num">1500.00</span>
-},
+<span class="key">"netProfit"</span>: <span class="num">5800.00</span>,
+<span class="comm">// netProfit = grossProfit - expenses</span>
+<span class="key">"collected"</span>: <span class="num">10500.00</span>,
+<span class="comm">// collected = net amount (subtotal - discount) from paid orders</span>
+<span class="key">"outstanding"</span>: <span class="num">1500.00</span>,
+<span class="comm">// outstanding = net amount (subtotal - discount) from unpaid orders; collected + outstanding = netSales</span>
+<span class="key">"unpaidOrders"</span>: <span class="num">3</span>,
+<span class="comm">// unpaidOrders = count of unpaid orders</span>
 <span class="key">"group_by"</span>: <span class="str">"day"</span>,
 <span class="comm">// "hour" when from == to (single day), "day" when range ≤ 31 days, "month" when range > 31 days</span>
 <span class="key">"series"</span>: [

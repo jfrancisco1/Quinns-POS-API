@@ -114,29 +114,41 @@ class ReportService extends BaseService
         $tenantId  = $user?->tenant_id ?? 1;
         $role      = $user?->role ?? 'admin';
 
-        $fromDate = new \DateTimeImmutable($from);
-        $toDate   = new \DateTimeImmutable($to);
-        $diffDays = (int) $fromDate->diff($toDate)->days;
+        $fromDate  = new \DateTimeImmutable($from);
+        $toDate    = new \DateTimeImmutable($to);
+        $diffDays  = (int) $fromDate->diff($toDate)->days;
+        $dateRange = [$from . ' 00:00:00', $to . ' 23:59:59'];
 
-        $salesQuery = Order::query()
-            ->where('tenant_id', $tenantId)
-            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        $baseQuery = function () use ($tenantId, $role, $user, $branchId, $dateRange) {
+            $q = Order::query()
+                ->where('tenant_id', $tenantId)
+                ->whereBetween('created_at', $dateRange);
 
-        if (in_array($role, ['staff', 'delivery'])) {
-            $salesQuery->where('branch_id', $user->branch_id);
-        } elseif ($role === 'admin' && $branchId !== null) {
-            $salesQuery->where('branch_id', $branchId);
-        }
+            if (in_array($role, ['staff', 'delivery'])) {
+                $q->where('branch_id', $user->branch_id);
+            } elseif ($role === 'admin' && $branchId !== null) {
+                $q->where('branch_id', $branchId);
+            }
 
-        $grossSales = (float) $salesQuery->sum('subtotal');
+            return $q;
+        };
 
+        // Gross Sales and Discounts — all orders (paid + unpaid)
+        $allRow = $baseQuery()->selectRaw('
+            COALESCE(SUM(subtotal), 0) as gross_sales,
+            COALESCE(SUM(discount_amount), 0) as total_discounts
+        ')->first();
+
+        $grossSales     = (float) $allRow->gross_sales;
+        $totalDiscounts = (float) $allRow->total_discounts;
+        $netSales       = $grossSales - $totalDiscounts;
+
+        // COGS — all orders
         $cogQuery = Order::query()
             ->join('order_items as oi', 'oi.order_id', '=', 'orders.id')
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->where('orders.tenant_id', $tenantId)
-            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
-            ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('orders.created_at', $dateRange);
 
         if (in_array($role, ['staff', 'delivery'])) {
             $cogQuery->where('orders.branch_id', $user->branch_id);
@@ -146,24 +158,7 @@ class ReportService extends BaseService
 
         $costOfGoods = (float) $cogQuery->sum(DB::raw('oi.qty * COALESCE(i.cost, 0)'));
 
-        $unpaidQuery = Order::query()
-            ->where('tenant_id', $tenantId)
-            ->where('payment_status', 'unpaid')
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
-
-        if (in_array($role, ['staff', 'delivery'])) {
-            $unpaidQuery->where('branch_id', $user->branch_id);
-        } elseif ($role === 'admin' && $branchId !== null) {
-            $unpaidQuery->where('branch_id', $branchId);
-        }
-
-        $unpaidRow = $unpaidQuery->selectRaw('
-                COUNT(*) as orders,
-                COALESCE(SUM(subtotal), 0) as gross_sales
-            ')->first();
-
-        $unpaidGross = (float) $unpaidRow->gross_sales;
-
+        // Expenses
         $expenseQuery = Expense::query()
             ->where('tenant_id', $tenantId)
             ->whereBetween('expense_date', [$from, $to]);
@@ -176,23 +171,35 @@ class ReportService extends BaseService
 
         $totalExpenses = (float) $expenseQuery->sum('amount');
 
-        $netSales  = $grossSales;
-        $series    = $this->buildSeries($from, $to, $diffDays, $tenantId, $role, $user, $branchId);
-        $groupBy   = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
+        // Collected (paid) — net of discounts
+        $collected = (float) $baseQuery()
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->sum(DB::raw('subtotal - discount_amount'));
+
+        // Outstanding (unpaid) — net of discounts
+        $unpaidRow = $baseQuery()
+            ->where('payment_status', 'unpaid')
+            ->selectRaw('COUNT(*) as orders, COALESCE(SUM(subtotal - discount_amount), 0) as outstanding')
+            ->first();
+
+        $grossProfit = $netSales - $costOfGoods;
+        $netProfit   = $grossProfit - $totalExpenses;
+        $series      = $this->buildSeries($from, $to, $diffDays, $tenantId, $role, $user, $branchId);
+        $groupBy     = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
 
         return [
-            'grossSales'  => $grossSales,
-            'netSales'    => $netSales,
-            'costOfGoods' => $costOfGoods,
-            'grossProfit' => $grossSales - $costOfGoods,
-            'expenses'    => $totalExpenses,
-            'netProfit'   => $grossSales - $costOfGoods - $totalExpenses,
-            'unpaid'      => [
-                'orders'     => (int) $unpaidRow->orders,
-                'grossSales' => $unpaidGross,
-            ],
-            'group_by'    => $groupBy,
-            'series'      => $series,
+            'grossSales'   => $grossSales,
+            'discounts'    => $totalDiscounts,
+            'netSales'     => $netSales,
+            'costOfGoods'  => $costOfGoods,
+            'grossProfit'  => $grossProfit,
+            'expenses'     => $totalExpenses,
+            'netProfit'    => $netProfit,
+            'collected'    => $collected,
+            'outstanding'  => (float) $unpaidRow->outstanding,
+            'unpaidOrders' => (int) $unpaidRow->orders,
+            'group_by'     => $groupBy,
+            'series'       => $series,
         ];
     }
 
