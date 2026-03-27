@@ -444,7 +444,7 @@
                 <tr>
                     <td><span class="method get">GET</span></td>
                     <td class="path">/customers</td>
-                    <td class="desc">List all customers</td>
+                    <td class="desc">List all customers — supports <code>?search=</code> to filter by nickname or mobile</td>
                 </tr>
                 <tr>
                     <td><span class="method post">POST</span></td>
@@ -466,6 +466,16 @@
                     <td class="path">/customers/{id}</td>
                     <td class="desc">Delete a customer (soft delete)</td>
                 </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Query Parameters — GET /customers</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on nickname or mobile</td></tr>
             </tbody>
         </table>
 
@@ -511,7 +521,7 @@
                 <tr>
                     <td><span class="method get">GET</span></td>
                     <td class="path">/orders?from=YYYY-MM-DD&amp;to=YYYY-MM-DD</td>
-                    <td class="desc">List orders (cursor-paginated, 30 per page); optionally filter by date range and status</td>
+                    <td class="desc">List orders (cursor-paginated, 30 per page); optionally filter by date range, status, or customer name</td>
                 </tr>
                 <tr>
                     <td><span class="method post">POST</span></td>
@@ -547,6 +557,7 @@
                 <tr><td class="field-name">payment_status</td><td>string</td><td class="optional">No</td><td>Filter by payment status. Values: <code>unpaid</code>, <code>paid</code></td></tr>
                 <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>in_progress</code>, <code>completed</code></td></tr>
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
+                <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on customer nickname</td></tr>
                 <tr><td class="field-name">cursor</td><td>string</td><td class="optional">No</td><td>Opaque cursor string returned in <code>nextCursor</code> / <code>prevCursor</code> of a previous response. Omit for the first page.</td></tr>
             </tbody>
         </table>
