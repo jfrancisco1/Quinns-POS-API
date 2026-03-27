@@ -75,8 +75,26 @@ class OrderService extends BaseService
             }
 
             if (empty($order->order_number)) {
-                $count = Order::where('branch_id', $order->branch_id)->count();
-                $order->order_number = 'ORD-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+                // Atomically increment the per-branch sequence (safe for millions of orders)
+                $seq = DB::table('branch_order_sequences')
+                    ->where('branch_id', $order->branch_id)
+                    ->lockForUpdate()
+                    ->value('last_seq');
+
+                if ($seq === null) {
+                    DB::table('branch_order_sequences')->insert([
+                        'branch_id' => $order->branch_id,
+                        'last_seq'  => 1,
+                    ]);
+                    $next = 1;
+                } else {
+                    $next = $seq + 1;
+                    DB::table('branch_order_sequences')
+                        ->where('branch_id', $order->branch_id)
+                        ->update(['last_seq' => $next]);
+                }
+
+                $order->order_number = 'ORD-' . str_pad($next, 5, '0', STR_PAD_LEFT);
                 $order->save();
             }
 
