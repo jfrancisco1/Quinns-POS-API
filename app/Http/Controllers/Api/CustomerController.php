@@ -9,6 +9,7 @@ use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CustomerController extends Controller
@@ -18,9 +19,9 @@ class CustomerController extends Controller
     ) {
     }
 
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $customers = $this->customerService->getAll();
+        $customers = $this->customerService->getAll($request->string('search')->value() ?: null);
         return CustomerResource::collection($customers);
     }
 

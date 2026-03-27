@@ -22,6 +22,7 @@ class OrderService extends BaseService
         ?string $paymentStatus = null,
         ?string $orderStatus = null,
         ?string $fulfillmentType = null,
+        ?string $search = null,
     ): CursorPaginator {
         $query = $this->tenantScope()->with(['customer', 'items'])->orderBy('created_at', 'desc')->orderBy('id', 'desc');
 
@@ -39,6 +40,10 @@ class OrderService extends BaseService
 
         if ($fulfillmentType) {
             $query->where('fulfillment_type', $fulfillmentType);
+        }
+
+        if ($search) {
+            $query->whereHas('customer', fn ($q) => $q->where('nickname', 'ilike', "%{$search}%"));
         }
 
         return $query->cursorPaginate(30);

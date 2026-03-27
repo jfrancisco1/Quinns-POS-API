@@ -13,11 +13,15 @@ class CustomerService extends BaseService
         return Customer::class;
     }
 
-    public function getAll(): Collection
+    public function getAll(?string $search = null): Collection
     {
         return $this->tenantScope()
             ->withMax('orders', 'created_at')
             ->withSum('orders', 'total')
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+                $q->where('nickname', 'ilike', "%{$search}%")
+                  ->orWhere('mobile', 'ilike', "%{$search}%");
+            }))
             ->latest()
             ->get();
     }
