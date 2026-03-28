@@ -10,7 +10,7 @@ class PaymentHistory extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'order_id',
+        'order_number',
         'from_status',
         'to_status',
         'changed_at',
@@ -22,6 +22,6 @@ class PaymentHistory extends Model
 
     public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_number', 'order_number');
     }
 }

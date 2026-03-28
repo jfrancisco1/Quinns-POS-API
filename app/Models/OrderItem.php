@@ -16,7 +16,7 @@ class OrderItem extends Model
 
     protected $fillable = [
         'id',
-        'order_id',
+        'order_number',
         'item_id',
         'label',
         'qty',
@@ -30,6 +30,6 @@ class OrderItem extends Model
 
     public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_number', 'order_number');
     }
 }

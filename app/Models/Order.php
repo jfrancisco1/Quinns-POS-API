@@ -13,11 +13,12 @@ class Order extends Model
 {
     use HasUuids;
 
+    protected $primaryKey = 'order_number';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'id',
+        'order_number',
         'customer_id',
         'fulfillment_type',
         'subtotal',
@@ -49,19 +50,24 @@ class Order extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'order_number';
+    }
+
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class, 'order_number', 'order_number');
     }
 
     public function paymentHistory(): HasMany
     {
-        return $this->hasMany(PaymentHistory::class);
+        return $this->hasMany(PaymentHistory::class, 'order_number', 'order_number');
     }
 
     public function orderStatusHistory(): HasMany
     {
-        return $this->hasMany(OrderStatusHistory::class);
+        return $this->hasMany(OrderStatusHistory::class, 'order_number', 'order_number');
     }
 
     public function resolveRouteBinding($value, $field = null)

@@ -69,15 +69,10 @@ class OrderService extends BaseService
 
             // Idempotent: client-generated UUID prevents duplicates on re-sync
             if (!empty($data['id'])) {
-                $order = Order::updateOrCreate(['id' => $data['id']], $payload);
+                $payload['order_number'] = $data['id'];
+                $order = Order::updateOrCreate(['order_number' => $data['id']], $payload);
             } else {
                 $order = Order::create($payload);
-            }
-
-            if (empty($order->order_number)) {
-                $count = Order::where('branch_id', $order->branch_id)->count();
-                $order->order_number = 'ORD-' . str_pad($count, 5, '0', STR_PAD_LEFT);
-                $order->save();
             }
 
             $this->syncItems($order, $data['items'] ?? []);
@@ -108,19 +103,19 @@ class OrderService extends BaseService
 
             if (isset($data['paymentStatus']) && $data['paymentStatus'] !== $oldPaymentStatus) {
                 PaymentHistory::create([
-                    'order_id'    => $order->id,
-                    'from_status' => $oldPaymentStatus,
-                    'to_status'   => $data['paymentStatus'],
-                    'changed_at'  => now(),
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldPaymentStatus,
+                    'to_status'    => $data['paymentStatus'],
+                    'changed_at'   => now(),
                 ]);
             }
 
             if (isset($data['orderStatus']) && $data['orderStatus'] !== $oldOrderStatus) {
                 OrderStatusHistory::create([
-                    'order_id'    => $order->id,
-                    'from_status' => $oldOrderStatus,
-                    'to_status'   => $data['orderStatus'],
-                    'changed_at'  => now(),
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldOrderStatus,
+                    'to_status'    => $data['orderStatus'],
+                    'changed_at'   => now(),
                 ]);
             }
 
