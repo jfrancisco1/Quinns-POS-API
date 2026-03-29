@@ -21,7 +21,7 @@ class ReportService extends BaseService
         $role     = $user?->role ?? 'admin';
 
         $query = Order::query()
-            ->join('order_items as oi', 'oi.order_id', '=', 'orders.id')
+            ->join('order_items as oi', 'oi.order_number', '=', 'orders.order_number')
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->leftJoin('categories as c', 'c.id', '=', 'i.category_id')
             ->where('orders.tenant_id', $tenantId)
@@ -145,7 +145,7 @@ class ReportService extends BaseService
 
         // COGS — all orders
         $cogQuery = Order::query()
-            ->join('order_items as oi', 'oi.order_id', '=', 'orders.id')
+            ->join('order_items as oi', 'oi.order_number', '=', 'orders.order_number')
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->where('orders.tenant_id', $tenantId)
             ->whereBetween('orders.created_at', $dateRange);

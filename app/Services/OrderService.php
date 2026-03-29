@@ -69,34 +69,12 @@ class OrderService extends BaseService
 
             // Idempotent: client-generated UUID prevents duplicates on re-sync
             if (!empty($data['id'])) {
-                $order = Order::updateOrCreate(['id' => $data['id']], $payload);
+                $payload['order_number'] = $data['id'];
+                $order = Order::updateOrCreate(['order_number' => $data['id']], $payload);
             } else {
                 $order = Order::create($payload);
             }
 
-            if (empty($order->order_number)) {
-                // Atomically increment the per-branch sequence (safe for millions of orders)
-                $seq = DB::table('branch_order_sequences')
-                    ->where('branch_id', $order->branch_id)
-                    ->lockForUpdate()
-                    ->value('last_seq');
-
-                if ($seq === null) {
-                    DB::table('branch_order_sequences')->insert([
-                        'branch_id' => $order->branch_id,
-                        'last_seq'  => 1,
-                    ]);
-                    $next = 1;
-                } else {
-                    $next = $seq + 1;
-                    DB::table('branch_order_sequences')
-                        ->where('branch_id', $order->branch_id)
-                        ->update(['last_seq' => $next]);
-                }
-
-                $order->order_number = 'ORD-' . str_pad($next, 5, '0', STR_PAD_LEFT);
-                $order->save();
-            }
 
             $this->syncItems($order, $data['items'] ?? []);
 
@@ -126,19 +104,19 @@ class OrderService extends BaseService
 
             if (isset($data['paymentStatus']) && $data['paymentStatus'] !== $oldPaymentStatus) {
                 PaymentHistory::create([
-                    'order_id'    => $order->id,
-                    'from_status' => $oldPaymentStatus,
-                    'to_status'   => $data['paymentStatus'],
-                    'changed_at'  => now(),
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldPaymentStatus,
+                    'to_status'    => $data['paymentStatus'],
+                    'changed_at'   => now(),
                 ]);
             }
 
             if (isset($data['orderStatus']) && $data['orderStatus'] !== $oldOrderStatus) {
                 OrderStatusHistory::create([
-                    'order_id'    => $order->id,
-                    'from_status' => $oldOrderStatus,
-                    'to_status'   => $data['orderStatus'],
-                    'changed_at'  => now(),
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldOrderStatus,
+                    'to_status'    => $data['orderStatus'],
+                    'changed_at'   => now(),
                 ]);
             }
 
