@@ -24,7 +24,7 @@ class OrderService extends BaseService
         ?string $fulfillmentType = null,
         ?string $search = null,
     ): CursorPaginator {
-        $query = $this->tenantScope()->with(['customer', 'items'])->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+        $query = $this->tenantScope()->with(['customer', 'items'])->orderBy('created_at', 'desc')->orderBy('order_number', 'desc');
 
         if ($from && $to) {
             $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);

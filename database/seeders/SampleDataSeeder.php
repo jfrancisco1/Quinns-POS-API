@@ -173,11 +173,9 @@ class SampleDataSeeder extends Seeder
 
             $deliveryFee = $fulfillment === 'pickup-deliver' ? 50 : 0;
             $total       = $subtotal + $deliveryFee;
-            $orderNumber = 'ORD-' . str_pad($orderCount + 1, 5, '0', STR_PAD_LEFT);
+            $orderNumber = Str::uuid()->toString();
 
-            $orderId = Str::uuid()->toString();
             DB::table('orders')->insert([
-                'id'               => $orderId,
                 'order_number'     => $orderNumber,
                 'customer_id'      => $customerId,
                 'fulfillment_type' => $fulfillment,
@@ -192,7 +190,7 @@ class SampleDataSeeder extends Seeder
                 'updated_at'       => $createdAt,
             ]);
 
-            $orderItemRows = array_map(fn($r) => [...$r, 'order_id' => $orderId], $orderItemRows);
+            $orderItemRows = array_map(fn($r) => [...$r, 'order_number' => $orderNumber], $orderItemRows);
             DB::table('order_items')->insert($orderItemRows);
 
             $orderCount++;
