@@ -128,6 +128,52 @@ class OrderService extends BaseService
         });
     }
 
+    public function updatePaymentStatus(Order $order, string $paymentStatus): Order
+    {
+        $this->authorizeTenant($order);
+
+        return DB::transaction(function () use ($order, $paymentStatus) {
+            $oldPaymentStatus = $order->payment_status;
+
+            $order->update(['payment_status' => $paymentStatus]);
+            $order->refresh();
+
+            if ($paymentStatus !== $oldPaymentStatus) {
+                PaymentHistory::create([
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldPaymentStatus,
+                    'to_status'    => $paymentStatus,
+                    'changed_at'   => now(),
+                ]);
+            }
+
+            return $order->load(['customer', 'items']);
+        });
+    }
+
+    public function updateOrderStatus(Order $order, string $orderStatus): Order
+    {
+        $this->authorizeTenant($order);
+
+        return DB::transaction(function () use ($order, $orderStatus) {
+            $oldOrderStatus = $order->order_status;
+
+            $order->update(['order_status' => $orderStatus]);
+            $order->refresh();
+
+            if ($orderStatus !== $oldOrderStatus) {
+                OrderStatusHistory::create([
+                    'order_number' => $order->order_number,
+                    'from_status'  => $oldOrderStatus,
+                    'to_status'    => $orderStatus,
+                    'changed_at'   => now(),
+                ]);
+            }
+
+            return $order->load(['customer', 'items']);
+        });
+    }
+
     public function delete(Order $order): void
     {
         $this->authorizeTenant($order);

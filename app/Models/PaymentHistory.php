@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PaymentHistory extends Model
 {
+    protected $table = 'payment_history';
+
     public $timestamps = false;
 
     protected $fillable = [

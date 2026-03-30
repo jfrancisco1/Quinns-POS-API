@@ -20,7 +20,7 @@ class StoreOrderRequest extends FormRequest
             'deliveryFee'    => ['required', 'numeric', 'min:0'],
             'total'          => ['required', 'numeric', 'min:0'],
             'createdAt'      => ['nullable', 'string'],
-            'paymentStatus'  => ['nullable', 'string', 'in:unpaid,paid_gcash,paid_cash,paid_others'],
+            'paymentStatus'  => ['nullable', 'string', 'in:unpaid,paid_gcash,paid_cash,paid_others,paid_bank'],
             'orderStatus'    => ['nullable', 'string', 'in:in_progress,ready,completed'],
             'items'          => ['required', 'array', 'min:1'],
             'items.*.itemId' => ['required', 'string'],

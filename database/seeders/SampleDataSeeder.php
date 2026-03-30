@@ -138,7 +138,7 @@ class SampleDataSeeder extends Seeder
         // -------------------------------------------------------
         // 4. ORDERS + ORDER ITEMS (last 3 months)
         // -------------------------------------------------------
-        $paymentStatuses = ['unpaid', 'unpaid', 'pending', 'paid_cash', 'paid_cash', 'paid_cash', 'paid_gcash', 'paid_gcash'];
+        $paymentStatuses = ['unpaid', 'unpaid', 'unpaid', 'paid_cash', 'paid_cash', 'paid_cash', 'paid_gcash', 'paid_gcash', 'paid_bank'];
         $orderStatuses   = ['in_progress', 'ready', 'completed', 'completed', 'completed'];
         $fulfillmentTypes = ['walk-in', 'walk-in', 'walk-in', 'pickup-deliver'];
 
@@ -162,12 +162,11 @@ class SampleDataSeeder extends Seeder
                 $subtotal += $lineTotal;
 
                 $orderItemRows[] = [
-                    'id'       => Str::uuid()->toString(),
-                    'item_id'  => $item['id'],
-                    'label'    => $item['name'],
-                    'unit'     => 'pc',
-                    'qty'      => $qty,
-                    'price'    => $item['price'],
+                    'id'      => Str::uuid()->toString(),
+                    'item_id' => $item['id'],
+                    'label'   => $item['name'],
+                    'qty'     => $qty,
+                    'price'   => $item['price'],
                 ];
             }
 

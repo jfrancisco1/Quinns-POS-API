@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
+use App\Http\Requests\Order\UpdateOrderStatusRequest;
+use App\Http\Requests\Order\UpdatePaymentStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Item;
 use App\Models\Order;
@@ -68,6 +70,18 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, Order $order): OrderResource
     {
         $order = $this->orderService->update($order, $request->validated());
+        return new OrderResource($order);
+    }
+
+    public function updateOrderStatus(UpdateOrderStatusRequest $request, Order $order): OrderResource
+    {
+        $order = $this->orderService->updateOrderStatus($order, $request->validated()['orderStatus']);
+        return new OrderResource($order);
+    }
+
+    public function updatePaymentStatus(UpdatePaymentStatusRequest $request, Order $order): OrderResource
+    {
+        $order = $this->orderService->updatePaymentStatus($order, $request->validated()['paymentStatus']);
         return new OrderResource($order);
     }
 

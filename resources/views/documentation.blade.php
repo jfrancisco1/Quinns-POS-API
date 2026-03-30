@@ -543,6 +543,16 @@
                     <td class="path">/orders/{orderNumber}</td>
                     <td class="desc">Delete an order</td>
                 </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/orders/{orderNumber}/payment-status</td>
+                    <td class="desc">Update only the payment status of an order</td>
+                </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/orders/{orderNumber}/order-status</td>
+                    <td class="desc">Update only the order status of an order</td>
+                </tr>
             </tbody>
         </table>
 
@@ -574,7 +584,7 @@
                 <tr><td class="field-name">deliveryFee</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
-                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | paid_gcash | paid_cash | paid_others (default: unpaid)</td></tr>
+                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | paid_gcash | paid_cash | paid_others | paid_bank (default: unpaid)</td></tr>
                 <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed (default: in_progress)</td></tr>
                 <tr><td class="field-name">items</td><td>array</td><td class="required">Yes</td><td>At least 1 item required</td></tr>
             </tbody>
@@ -590,6 +600,26 @@
                 <tr><td class="field-name">label</td><td>string</td><td class="required">Yes</td><td>Snapshot of item name</td></tr>
                 <tr><td class="field-name">qty</td><td>integer</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">price</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">PATCH /orders/{orderNumber}/payment-status — Request Body</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">paymentStatus</td><td>string</td><td class="required">Yes</td><td>unpaid | paid_cash | paid_gcash | paid_others | paid_bank</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">PATCH /orders/{orderNumber}/order-status — Request Body</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">orderStatus</td><td>string</td><td class="required">Yes</td><td>in_progress | ready | completed</td></tr>
             </tbody>
         </table>
 
