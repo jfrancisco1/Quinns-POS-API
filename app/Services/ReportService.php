@@ -173,7 +173,7 @@ class ReportService extends BaseService
 
         // Collected (paid) — net of discounts
         $collected = (float) $baseQuery()
-            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
             ->sum(DB::raw('subtotal - discount_amount'));
 
         // Outstanding (unpaid) — net of discounts
