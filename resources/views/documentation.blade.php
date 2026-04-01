@@ -832,6 +832,11 @@
     <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>
   },
   {
+    <span class="key">"payment_method"</span>: <span class="str">"paid_bank"</span>,
+    <span class="key">"transactions"</span>: <span class="num">10</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">2000.00</span>
+  },
+  {
     <span class="key">"payment_method"</span>: <span class="str">"paid_others"</span>,
     <span class="key">"transactions"</span>: <span class="num">5</span>,
     <span class="key">"payment_amount"</span>: <span class="num">750.00</span>
