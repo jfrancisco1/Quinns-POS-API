@@ -68,9 +68,10 @@ class OrderService extends BaseService
             ];
 
             // Idempotent: client-generated UUID prevents duplicates on re-sync
-            if (!empty($data['id'])) {
-                $payload['order_number'] = $data['id'];
-                $order = Order::updateOrCreate(['order_number' => $data['id']], $payload);
+            $clientOrderNumber = $data['orderNumber'] ?? $data['id'] ?? null;
+            if (!empty($clientOrderNumber)) {
+                $payload['order_number'] = $clientOrderNumber;
+                $order = Order::updateOrCreate(['order_number' => $clientOrderNumber], $payload);
             } else {
                 $order = Order::create($payload);
             }
