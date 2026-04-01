@@ -54,11 +54,11 @@ class OrderService extends BaseService
         $user = Auth::user();
 
         return DB::transaction(function () use ($data, $user) {
-            $clientOrderNumber = $data['orderNumber'] 
+            $clientOrderNumber = $data['orderNumber']
                 ?? throw new \InvalidArgumentException('orderNumber is required.');
 
             $payload = [
-                'order_number'       => $data['orderNumber'],
+                'order_number'      => $clientOrderNumber,
                 'customer_id'       => $data['customer_id'] ?? null,
                 'fulfillment_type'  => $data['fulfillmentType'],
                 'subtotal'          => $data['subtotal'],
@@ -71,7 +71,7 @@ class OrderService extends BaseService
                 'branch_id'         => $user->branch_id ?? $data['branch_id'] ?? 1,
             ];
 
-            $order = Order::create($payload);
+            $order = Order::updateOrCreate(['order_number' => $clientOrderNumber], $payload);
 
             $this->syncItems($order, $data['items'] ?? []);
 
