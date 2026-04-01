@@ -54,7 +54,11 @@ class OrderService extends BaseService
         $user = Auth::user();
 
         return DB::transaction(function () use ($data, $user) {
+            $clientOrderNumber = $data['orderNumber'] 
+                ?? throw new \InvalidArgumentException('orderNumber is required.');
+
             $payload = [
+                'orderNumber'       => $data['orderNumber'],
                 'customer_id'       => $data['customer_id'] ?? null,
                 'fulfillment_type'  => $data['fulfillmentType'],
                 'subtotal'          => $data['subtotal'],
@@ -67,15 +71,7 @@ class OrderService extends BaseService
                 'branch_id'         => $user->branch_id ?? $data['branch_id'] ?? 1,
             ];
 
-            // Idempotent: client-generated UUID prevents duplicates on re-sync
-            $clientOrderNumber = $data['orderNumber'] ?? $data['id'] ?? null;
-            if (!empty($clientOrderNumber)) {
-                $payload['order_number'] = $clientOrderNumber;
-                $order = Order::updateOrCreate(['order_number' => $clientOrderNumber], $payload);
-            } else {
-                $order = Order::create($payload);
-            }
-
+            $order = Order::create($payload);
 
             $this->syncItems($order, $data['items'] ?? []);
 
