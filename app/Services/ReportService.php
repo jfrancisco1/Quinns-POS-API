@@ -25,7 +25,7 @@ class ReportService extends BaseService
             ->leftJoin('items as i', DB::raw('i.id'), '=', DB::raw('CAST(oi.item_id AS integer)'))
             ->leftJoin('categories as c', 'c.id', '=', 'i.category_id')
             ->where('orders.tenant_id', $tenantId)
-            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others'])
+            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
             ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         if (in_array($role, ['staff', 'delivery'])) {
