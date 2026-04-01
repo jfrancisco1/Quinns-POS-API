@@ -58,7 +58,7 @@ class OrderService extends BaseService
                 ?? throw new \InvalidArgumentException('orderNumber is required.');
 
             $payload = [
-                'orderNumber'       => $data['orderNumber'],
+                'order_number'       => $data['orderNumber'],
                 'customer_id'       => $data['customer_id'] ?? null,
                 'fulfillment_type'  => $data['fulfillmentType'],
                 'subtotal'          => $data['subtotal'],
