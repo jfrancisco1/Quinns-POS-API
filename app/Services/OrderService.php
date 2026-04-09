@@ -147,7 +147,7 @@ class OrderService extends BaseService
                 ]);
             }
 
-            return $order->load(['customer', 'items']);
+            return $order->load(['customer', 'items', 'paymentHistory.updatedBy']);
         });
     }
 
@@ -171,7 +171,7 @@ class OrderService extends BaseService
                 ]);
             }
 
-            return $order->load(['customer', 'items']);
+            return $order->load(['customer', 'items', 'orderStatusHistory.updatedBy']);
         });
     }
 
