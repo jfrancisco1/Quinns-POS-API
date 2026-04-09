@@ -17,17 +17,24 @@ class ItemService extends BaseService
     {
         return $this->tenantScope()
             ->with('category')
-            ->latest()
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->get();
     }
 
     public function create(array $data): Item
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? 1;
+
+        if (!isset($data['sort_order'])) {
+            $max = Item::where('tenant_id', $tenantId)->max('sort_order');
+            $data['sort_order'] = ($max ?? -1) + 1;
+        }
 
         return Item::create([
             ...$data,
-            'tenant_id' => $user->tenant_id ?? 1,
+            'tenant_id' => $tenantId,
             'branch_id' => $user->branch_id ?? $data['branch_id'] ?? 1,
         ]);
     }

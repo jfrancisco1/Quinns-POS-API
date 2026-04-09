@@ -22,6 +22,7 @@ class UpdateItemRequest extends FormRequest
             'cost'        => ['sometimes', 'numeric', 'min:0'],
             'is_active'   => ['boolean'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'sort_order'  => ['integer', 'min:0'],
         ];
     }
 }

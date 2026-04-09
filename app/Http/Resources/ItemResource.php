@@ -18,6 +18,7 @@ class ItemResource extends JsonResource
             'price'       => $this->price,
             'cost'        => $this->cost,
             'is_active'   => $this->is_active,
+            'sort_order'  => $this->sort_order,
             'category'    => new CategoryResource($this->whenLoaded('category')),
             'created_at'  => $this->created_at->toDateTimeString(),
             'updated_at'  => $this->updated_at->toDateTimeString(),

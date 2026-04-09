@@ -973,6 +973,7 @@
                 <tr><td class="field-name">color</td><td>string</td><td class="optional">No</td><td>e.g. #FF5733</td></tr>
                 <tr><td class="field-name">shape</td><td>string</td><td class="optional">No</td><td>circle, square, star, diamond</td></tr>
                 <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
+                <tr><td class="field-name">sort_order</td><td>integer</td><td class="optional">No</td><td>Display priority; lower = first. Auto-assigned if omitted</td></tr>
                 <tr><td class="field-name">category_id</td><td>integer</td><td class="optional">No</td><td>Must exist in categories</td></tr>
             </tbody>
         </table>
@@ -986,6 +987,7 @@
 <span class="key">"price"</span>: <span class="str">"50.00"</span>,
 <span class="key">"cost"</span>: <span class="str">"20.00"</span>,
 <span class="key">"is_active"</span>: <span class="bool">true</span>,
+<span class="key">"sort_order"</span>: <span class="num">0</span>,
 <span class="key">"category"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Dry Cleaning"</span>,
