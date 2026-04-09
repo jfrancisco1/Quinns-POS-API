@@ -23,6 +23,22 @@ class OrderResource extends JsonResource
             'orderStatus'    => $this->order_status,
             'branch'         => $this->whenLoaded('branch', fn() => ['id' => $this->branch->id, 'name' => $this->branch->name]),
             'items'          => OrderItemResource::collection($this->whenLoaded('items')),
+            'paymentHistory' => $this->whenLoaded('paymentHistory', fn() =>
+                $this->paymentHistory->map(fn($h) => [
+                    'fromStatus' => $h->from_status,
+                    'toStatus'   => $h->to_status,
+                    'changedAt'  => $h->changed_at?->toISOString(),
+                    'updatedBy'  => $h->updatedBy ? ['id' => $h->updatedBy->id, 'name' => $h->updatedBy->name, 'role' => $h->updatedBy->role] : null,
+                ])
+            ),
+            'orderStatusHistory' => $this->whenLoaded('orderStatusHistory', fn() =>
+                $this->orderStatusHistory->map(fn($h) => [
+                    'fromStatus' => $h->from_status,
+                    'toStatus'   => $h->to_status,
+                    'changedAt'  => $h->changed_at?->toISOString(),
+                    'updatedBy'  => $h->updatedBy ? ['id' => $h->updatedBy->id, 'name' => $h->updatedBy->name, 'role' => $h->updatedBy->role] : null,
+                ])
+            ),
         ];
     }
 }

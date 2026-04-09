@@ -49,7 +49,7 @@ class OrderController extends Controller
 
     public function show(Order $order): OrderResource
     {
-        $order->load(['customer', 'items', 'branch']);
+        $order->load(['customer', 'items', 'branch', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy']);
         $this->enrichItemMeta($order->items);
         return new OrderResource($order);
     }

@@ -644,6 +644,46 @@
 <span class="key">"prevCursor"</span>: <span class="str">null</span>,
 <span class="key">"hasMore"</span>: <span class="bool">true</span>,
 <span class="key">"perPage"</span>: <span class="num">30</span></div>
+
+        <div class="fields-title">GET /orders/{orderNumber} Response (order detail — includes history)</div>
+        <div class="code-block">{
+  <span class="key">"orderNumber"</span>: <span class="str">"ORD-00001"</span>,
+  <span class="key">"customer_id"</span>: <span class="str">"uuid-..."</span>,
+  <span class="key">"customer"</span>: { ... },
+  <span class="key">"fulfillmentType"</span>: <span class="str">"delivery"</span>,
+  <span class="key">"subtotal"</span>: <span class="num">150</span>,
+  <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+  <span class="key">"discountAmount"</span>: <span class="num">0</span>,
+  <span class="key">"total"</span>: <span class="num">225</span>,
+  <span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
+  <span class="key">"paymentStatus"</span>: <span class="str">"paid_cash"</span>,
+  <span class="key">"orderStatus"</span>: <span class="str">"completed"</span>,
+  <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span> },
+  <span class="key">"items"</span>: [ ... ],
+  <span class="key">"paymentHistory"</span>: [
+    {
+      <span class="key">"fromStatus"</span>: <span class="str">"unpaid"</span>,
+      <span class="key">"toStatus"</span>: <span class="str">"paid_cash"</span>,
+      <span class="key">"changedAt"</span>: <span class="str">"2026-04-10T08:30:00.000000Z"</span>,
+      <span class="key">"updatedBy"</span>: { <span class="key">"id"</span>: <span class="num">3</span>, <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>, <span class="key">"role"</span>: <span class="str">"staff"</span> }
+    }
+  ],
+  <span class="key">"orderStatusHistory"</span>: [
+    {
+      <span class="key">"fromStatus"</span>: <span class="str">"in_progress"</span>,
+      <span class="key">"toStatus"</span>: <span class="str">"ready"</span>,
+      <span class="key">"changedAt"</span>: <span class="str">"2026-04-10T07:00:00.000000Z"</span>,
+      <span class="key">"updatedBy"</span>: { <span class="key">"id"</span>: <span class="num">3</span>, <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>, <span class="key">"role"</span>: <span class="str">"staff"</span> }
+    },
+    {
+      <span class="key">"fromStatus"</span>: <span class="str">"ready"</span>,
+      <span class="key">"toStatus"</span>: <span class="str">"completed"</span>,
+      <span class="key">"changedAt"</span>: <span class="str">"2026-04-10T08:30:00.000000Z"</span>,
+      <span class="key">"updatedBy"</span>: { <span class="key">"id"</span>: <span class="num">3</span>, <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>, <span class="key">"role"</span>: <span class="str">"staff"</span> }
+    }
+  ]
+}</div>
+        <p style="margin-top:8px;font-size:13px;color:#666;"><strong>Note:</strong> <code>paymentHistory</code> and <code>orderStatusHistory</code> are only included in the single-order detail response, not in the list endpoint. <code>updatedBy</code> is <code>null</code> for history records created before this feature was added.</p>
     </section>
 
     <hr class="divider">

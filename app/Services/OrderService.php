@@ -105,6 +105,7 @@ class OrderService extends BaseService
                     'from_status'  => $oldPaymentStatus,
                     'to_status'    => $data['paymentStatus'],
                     'changed_at'   => now(),
+                    'updated_by'   => Auth::id(),
                 ]);
             }
 
@@ -114,6 +115,7 @@ class OrderService extends BaseService
                     'from_status'  => $oldOrderStatus,
                     'to_status'    => $data['orderStatus'],
                     'changed_at'   => now(),
+                    'updated_by'   => Auth::id(),
                 ]);
             }
 
@@ -141,6 +143,7 @@ class OrderService extends BaseService
                     'from_status'  => $oldPaymentStatus,
                     'to_status'    => $paymentStatus,
                     'changed_at'   => now(),
+                    'updated_by'   => Auth::id(),
                 ]);
             }
 
@@ -164,6 +167,7 @@ class OrderService extends BaseService
                     'from_status'  => $oldOrderStatus,
                     'to_status'    => $orderStatus,
                     'changed_at'   => now(),
+                    'updated_by'   => Auth::id(),
                 ]);
             }
 
