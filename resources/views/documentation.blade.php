@@ -637,7 +637,9 @@
     <span class="key">"createdAt"</span>: <span class="str">"2026-03-10T00:00:00.000000Z"</span>,
     <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>,
     <span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span>,
-    <span class="key">"items"</span>: [ { <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>, <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>, <span class="key">"qty"</span>: <span class="num">2</span>, <span class="key">"price"</span>: <span class="num">75</span>, <span class="key">"color"</span>: <span class="str">"white"</span>, <span class="key">"shape"</span>: <span class="str">"round"</span> } ]
+    <span class="key">"items"</span>: [ { <span class="key">"itemId"</span>: <span class="str">"item-uuid-123"</span>, <span class="key">"label"</span>: <span class="str">"Polo Shirt"</span>, <span class="key">"qty"</span>: <span class="num">2</span>, <span class="key">"price"</span>: <span class="num">75</span>, <span class="key">"color"</span>: <span class="str">"white"</span>, <span class="key">"shape"</span>: <span class="str">"round"</span> } ],
+    <span class="key">"paymentHistory"</span>: [ { <span class="key">"fromStatus"</span>: <span class="str">"unpaid"</span>, <span class="key">"toStatus"</span>: <span class="str">"paid_cash"</span>, <span class="key">"changedAt"</span>: <span class="str">"2026-04-10T08:30:00.000000Z"</span>, <span class="key">"updatedBy"</span>: { <span class="key">"id"</span>: <span class="num">3</span>, <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>, <span class="key">"role"</span>: <span class="str">"staff"</span> } } ],
+    <span class="key">"orderStatusHistory"</span>: [ { <span class="key">"fromStatus"</span>: <span class="str">"in_progress"</span>, <span class="key">"toStatus"</span>: <span class="str">"completed"</span>, <span class="key">"changedAt"</span>: <span class="str">"2026-04-10T09:00:00.000000Z"</span>, <span class="key">"updatedBy"</span>: { <span class="key">"id"</span>: <span class="num">3</span>, <span class="key">"name"</span>: <span class="str">"Juan dela Cruz"</span>, <span class="key">"role"</span>: <span class="str">"staff"</span> } } ]
   }
 ],
 <span class="key">"nextCursor"</span>: <span class="str">"eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0xMCIsImlkIjoiLi4uIn0"</span>,
@@ -645,7 +647,7 @@
 <span class="key">"hasMore"</span>: <span class="bool">true</span>,
 <span class="key">"perPage"</span>: <span class="num">30</span></div>
 
-        <div class="fields-title">GET /orders/{orderNumber} Response (order detail — includes history)</div>
+        <div class="fields-title">GET /orders/{orderNumber} Response (order detail)</div>
         <div class="code-block">{
   <span class="key">"orderNumber"</span>: <span class="str">"ORD-00001"</span>,
   <span class="key">"customer_id"</span>: <span class="str">"uuid-..."</span>,
@@ -683,7 +685,7 @@
     }
   ]
 }</div>
-        <p style="margin-top:8px;font-size:13px;color:#666;"><strong>Note:</strong> <code>paymentHistory</code> and <code>orderStatusHistory</code> are only included in the single-order detail response, not in the list endpoint. <code>updatedBy</code> is <code>null</code> for history records created before this feature was added.</p>
+        <p style="margin-top:8px;font-size:13px;color:#666;"><strong>Note:</strong> <code>updatedBy</code> is <code>null</code> for history records created before this feature was added.</p>
     </section>
 
     <hr class="divider">
