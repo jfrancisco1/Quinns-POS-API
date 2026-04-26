@@ -27,6 +27,12 @@ class UserController extends Controller
         return new UserResource($user->load('branch'));
     }
 
+    public function show(Tenant $tenant, User $user): UserResource
+    {
+        abort_if($user->tenant_id !== $tenant->id, 404);
+        return new UserResource($user->load('branch'));
+    }
+
     public function update(UpdateUserRequest $request, Tenant $tenant, User $user): UserResource
     {
         abort_if($user->tenant_id !== $tenant->id, 404);

@@ -20,7 +20,10 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'owner'])->prefix('owner')->group(function () {
         Route::apiResource('tenants', OwnerTenantController::class);
         Route::apiResource('tenants.branches', OwnerBranchController::class)->shallow();
-        Route::apiResource('tenants.users', OwnerUserController::class)->shallow()->except(['show']);
+        Route::apiResource('tenants.users', OwnerUserController::class)->shallow()->only(['index', 'store', 'destroy']);
+        Route::get('tenants/{tenant}/users/{user}', [OwnerUserController::class, 'show']);
+        Route::put('tenants/{tenant}/users/{user}', [OwnerUserController::class, 'update']);
+        Route::patch('tenants/{tenant}/users/{user}', [OwnerUserController::class, 'update']);
         Route::patch('tenants/{tenant}/users/{user}/toggle', [OwnerUserController::class, 'toggle']);
     });
 
