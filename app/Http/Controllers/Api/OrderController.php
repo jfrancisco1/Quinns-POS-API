@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Order\OrderStatusesRequest;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Requests\Order\UpdateOrderStatusRequest;
@@ -83,6 +84,23 @@ class OrderController extends Controller
     {
         $order = $this->orderService->updatePaymentStatus($order, $request->validated()['paymentStatus']);
         return new OrderResource($order);
+    }
+
+    public function statuses(OrderStatusesRequest $request): JsonResponse
+    {
+        $tenantId = auth()->user()->tenant_id ?? 1;
+
+        $orders = Order::whereIn('order_number', $request->validated()['orderNumbers'])
+            ->where('tenant_id', $tenantId)
+            ->get(['order_number', 'payment_status', 'order_status']);
+
+        return response()->json(
+            $orders->map(fn($o) => [
+                'orderNumber'   => $o->order_number,
+                'paymentStatus' => $o->payment_status,
+                'orderStatus'   => $o->order_status,
+            ])->values()
+        );
     }
 
     public function destroy(Order $order): JsonResponse

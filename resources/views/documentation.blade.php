@@ -553,6 +553,11 @@
                     <td class="path">/orders/{orderNumber}/order-status</td>
                     <td class="desc">Update only the order status of an order</td>
                 </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/orders/statuses</td>
+                    <td class="desc">Bulk-fetch payment and order status for a list of order numbers (mobile sync)</td>
+                </tr>
             </tbody>
         </table>
 
@@ -686,6 +691,23 @@
   ]
 }</div>
         <p style="margin-top:8px;font-size:13px;color:#666;"><strong>Note:</strong> <code>updatedBy</code> is <code>null</code> for history records created before this feature was added.</p>
+
+        <div class="fields-title">POST /orders/statuses — Request Body</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">orderNumbers</td><td>string[]</td><td class="required">Yes</td><td>Array of order number UUIDs to look up. Min 1, max 200.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">POST /orders/statuses — Response</div>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">Returns only orders that exist and belong to the authenticated tenant. Unknown order numbers are silently skipped.</p>
+        <div class="code-block">[
+  { <span class="key">"orderNumber"</span>: <span class="str">"uuid1"</span>, <span class="key">"paymentStatus"</span>: <span class="str">"paid_cash"</span>, <span class="key">"orderStatus"</span>: <span class="str">"ready"</span> },
+  { <span class="key">"orderNumber"</span>: <span class="str">"uuid2"</span>, <span class="key">"paymentStatus"</span>: <span class="str">"unpaid"</span>, <span class="key">"orderStatus"</span>: <span class="str">"in_progress"</span> }
+]</div>
     </section>
 
     <hr class="divider">

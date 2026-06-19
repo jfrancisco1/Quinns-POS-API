@@ -35,6 +35,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('customers', CustomerController::class);
         Route::apiResource('categories', CategoryController::class);
         Route::apiResource('items', ItemController::class);
+        Route::post('orders/statuses', [OrderController::class, 'statuses']);
         Route::apiResource('orders', OrderController::class);
         Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
         Route::patch('orders/{order}/order-status', [OrderController::class, 'updateOrderStatus']);
