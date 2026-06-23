@@ -476,6 +476,7 @@
             </thead>
             <tbody>
                 <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on nickname or mobile</td></tr>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
 
@@ -574,6 +575,7 @@
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
                 <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on customer nickname</td></tr>
                 <tr><td class="field-name">cursor</td><td>string</td><td class="optional">No</td><td>Opaque cursor string returned in <code>nextCursor</code> / <code>prevCursor</code> of a previous response. Omit for the first page.</td></tr>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
 
@@ -750,6 +752,16 @@
                     <td class="path">/expenses/{id}</td>
                     <td class="desc">Delete an expense</td>
                 </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Query Parameters — GET /expenses</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
 
@@ -1021,6 +1033,16 @@
                     <td class="path">/items/{id}</td>
                     <td class="desc">Delete an item</td>
                 </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Query Parameters — GET /items</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
             </tbody>
         </table>
 

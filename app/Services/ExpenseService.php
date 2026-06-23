@@ -13,11 +13,15 @@ class ExpenseService extends BaseService
         return Expense::class;
     }
 
-    public function getAll(): Collection
+    public function getAll(?int $branchId = null): Collection
     {
-        return $this->tenantScope()
-            ->latest('expense_date')
-            ->get();
+        $query = $this->tenantScope()->latest('expense_date');
+
+        if ($branchId && Auth::user()?->role === 'admin') {
+            $query->where('branch_id', $branchId);
+        }
+
+        return $query->get();
     }
 
     public function create(array $data): Expense

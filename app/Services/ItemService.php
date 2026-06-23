@@ -13,13 +13,15 @@ class ItemService extends BaseService
         return Item::class;
     }
 
-    public function getAll(): Collection
+    public function getAll(?int $branchId = null): Collection
     {
-        return $this->tenantScope()
-            ->with('category')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+        $query = $this->tenantScope()->with('category')->orderBy('sort_order')->orderBy('id');
+
+        if ($branchId && Auth::user()?->role === 'admin') {
+            $query->where('branch_id', $branchId);
+        }
+
+        return $query->get();
     }
 
     public function create(array $data): Item

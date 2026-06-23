@@ -21,7 +21,8 @@ class CustomerController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $customers = $this->customerService->getAll($request->string('search')->value() ?: null);
+        $branchId  = $request->integer('branch_id') ?: null;
+        $customers = $this->customerService->getAll($request->string('search')->value() ?: null, $branchId);
         return CustomerResource::collection($customers);
     }
 

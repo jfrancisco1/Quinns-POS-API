@@ -23,8 +23,13 @@ class OrderService extends BaseService
         ?string $orderStatus = null,
         ?string $fulfillmentType = null,
         ?string $search = null,
+        ?int $branchId = null,
     ): CursorPaginator {
         $query = $this->tenantScope()->with(['customer', 'items', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy'])->orderBy('created_at', 'desc')->orderBy('order_number', 'desc');
+
+        if ($branchId && Auth::user()?->role === 'admin') {
+            $query->where('branch_id', $branchId);
+        }
 
         if ($from && $to) {
             $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);

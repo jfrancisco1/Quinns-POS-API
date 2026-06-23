@@ -20,7 +20,8 @@ class ExpenseController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $expenses = $this->expenseService->getAll();
+        $branchId = request()->integer('branch_id') ?: null;
+        $expenses = $this->expenseService->getAll($branchId);
         return ExpenseResource::collection($expenses);
     }
 

@@ -13,17 +13,22 @@ class CustomerService extends BaseService
         return Customer::class;
     }
 
-    public function getAll(?string $search = null): Collection
+    public function getAll(?string $search = null, ?int $branchId = null): Collection
     {
-        return $this->tenantScope()
+        $query = $this->tenantScope()
             ->withMax('orders', 'created_at')
             ->withSum('orders', 'total')
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('nickname', 'ilike', "%{$search}%")
                   ->orWhere('mobile', 'ilike', "%{$search}%");
             }))
-            ->latest()
-            ->get();
+            ->latest();
+
+        if ($branchId && Auth::user()?->role === 'admin') {
+            $query->where('branch_id', $branchId);
+        }
+
+        return $query->get();
     }
 
     public function findById(string $id): Customer

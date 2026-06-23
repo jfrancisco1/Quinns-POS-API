@@ -20,7 +20,8 @@ class ItemController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        return ItemResource::collection($this->itemService->getAll());
+        $branchId = request()->integer('branch_id') ?: null;
+        return ItemResource::collection($this->itemService->getAll($branchId));
     }
 
     public function store(StoreItemRequest $request): ItemResource
