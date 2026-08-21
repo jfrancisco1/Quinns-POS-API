@@ -834,6 +834,16 @@
             </tbody>
         </table>
 
+        <div class="fields-title">Query Parameters — GET /reports/sales-by-payment-type</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">date_basis</td><td>string</td><td class="optional">No</td><td><code>created</code> (default) filters by order creation date, same as other report endpoints. <code>paid</code> filters by the date each order most recently transitioned into its current paid status — see notes below</td></tr>
+            </tbody>
+        </table>
+
         <div class="fields-title">Response — GET /reports/sales</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01 00:00:00"</span>,
 <span class="key">"to"</span>: <span class="str">"2026-03-31 23:59:59"</span>,
@@ -927,6 +937,30 @@
   <span class="key">"transactions"</span>: <span class="num">3</span>,
   <span class="key">"amount"</span>: <span class="num">1500.00</span>
 }</div>
+<span class="comm">// unpaid block is included only for the default date_basis=created</span>
+
+        <div class="fields-title">Response — GET /reports/sales-by-payment-type?date_basis=paid</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
+<span class="key">"breakdown"</span>: [
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"paid_cash"</span>,
+    <span class="key">"transactions"</span>: <span class="num">78</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">7800.00</span>
+  },
+  {
+    <span class="key">"payment_method"</span>: <span class="str">"paid_gcash"</span>,
+    <span class="key">"transactions"</span>: <span class="num">31</span>,
+    <span class="key">"payment_amount"</span>: <span class="num">4650.00</span>
+  }
+]</div>
+<span class="comm">// date_basis=paid: breakdown is keyed by an order's CURRENT payment_status, bucketed by the</span>
+<span class="comm">// changed_at of the most recent payment_history row where to_status = that current status</span>
+<span class="comm">// (so a correction like unpaid -&gt; paid_cash -&gt; unpaid -&gt; paid_gcash counts once, under</span>
+<span class="comm">// paid_gcash, on the date of the second transition). payment_amount = subtotal - discount_amount,</span>
+<span class="comm">// matching "collected" in /reports/sales. Orders currently unpaid have no payment date and are</span>
+<span class="comm">// excluded entirely — the "unpaid" key is omitted from the response under this basis.</span>
     </section>
 
     <hr class="divider">

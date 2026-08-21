@@ -34,14 +34,16 @@ class ReportController extends Controller
     public function salesByPaymentType(Request $request): JsonResponse
     {
         $request->validate([
-            'from'      => ['required', 'date'],
-            'to'        => ['required', 'date', 'after_or_equal:from'],
-            'branch_id' => ['nullable', 'integer'],
+            'from'        => ['required', 'date'],
+            'to'          => ['required', 'date', 'after_or_equal:from'],
+            'branch_id'   => ['nullable', 'integer'],
+            'date_basis'  => ['nullable', 'in:created,paid'],
         ]);
 
-        $branchId = $request->integer('branch_id') ?: null;
-        $branch   = $this->resolveBranch($branchId);
-        $result   = $this->reportService->salesByPaymentType($request->from, $request->to, $branchId);
+        $branchId  = $request->integer('branch_id') ?: null;
+        $dateBasis = $request->input('date_basis', 'created');
+        $branch    = $this->resolveBranch($branchId);
+        $result    = $this->reportService->salesByPaymentType($request->from, $request->to, $branchId, $dateBasis);
 
         return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $result));
     }

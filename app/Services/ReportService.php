@@ -65,8 +65,12 @@ class ReportService extends BaseService
         return ['items' => $items, 'top_items' => $top5];
     }
 
-    public function salesByPaymentType(string $from, string $to, ?int $branchId = null): array
+    public function salesByPaymentType(string $from, string $to, ?int $branchId = null, string $dateBasis = 'created'): array
     {
+        if ($dateBasis === 'paid') {
+            return $this->salesByPaymentTypePaid($from, $to, $branchId);
+        }
+
         $user     = Auth::user();
         $tenantId = $user?->tenant_id ?? 1;
         $role     = $user?->role ?? 'admin';
@@ -109,6 +113,60 @@ class ReportService extends BaseService
             'breakdown' => $breakdown,
             'unpaid'    => $unpaid,
         ];
+    }
+
+    /**
+     * Same as salesByPaymentType, but bucketed by when each order's current
+     * payment_status was last reached (payment_history.changed_at), not created_at.
+     * Orders whose current status was reached more than once (e.g. a corrected
+     * payment method) count once, on the date of the most recent transition into
+     * that status. Currently-unpaid orders have no payment date and are excluded.
+     */
+    private function salesByPaymentTypePaid(string $from, string $to, ?int $branchId = null): array
+    {
+        $user     = Auth::user();
+        $tenantId = $user?->tenant_id ?? 1;
+        $role     = $user?->role ?? 'admin';
+
+        [$startUtc, $endUtc] = $this->localDayRangeUtc($from, $to);
+
+        $latestPayment = DB::table('payment_history as ph')
+            ->join('orders as o', 'o.order_number', '=', 'ph.order_number')
+            ->whereColumn('ph.to_status', 'o.payment_status')
+            ->groupBy('ph.order_number')
+            ->selectRaw('ph.order_number, MAX(ph.changed_at) as changed_at');
+
+        $query = Order::query()
+            ->joinSub($latestPayment, 'latest_payment', function ($join) {
+                $join->on('latest_payment.order_number', '=', 'orders.order_number');
+            })
+            ->where('orders.tenant_id', $tenantId)
+            ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_bank', 'paid_others'])
+            ->whereBetween('latest_payment.changed_at', [$startUtc, $endUtc]);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $query->where('orders.branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $query->where('orders.branch_id', $branchId);
+        }
+
+        $rows = $query
+            ->selectRaw('
+                orders.payment_status,
+                COUNT(*) as transactions,
+                COALESCE(SUM(orders.subtotal - orders.discount_amount), 0) as payment_amount
+            ')
+            ->groupBy('orders.payment_status')
+            ->orderBy('orders.payment_status')
+            ->get();
+
+        $breakdown = $rows->map(fn ($row) => [
+            'payment_method' => $row->payment_status,
+            'transactions'   => (int) $row->transactions,
+            'payment_amount' => (float) $row->payment_amount,
+        ])->all();
+
+        return ['breakdown' => $breakdown];
     }
 
     public function salesSummary(string $from, string $to, ?int $branchId = null): array
