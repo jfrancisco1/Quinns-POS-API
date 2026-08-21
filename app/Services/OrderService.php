@@ -32,7 +32,7 @@ class OrderService extends BaseService
         }
 
         if ($from && $to) {
-            $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            $query->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
         }
 
         if ($paymentStatus) {

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class ReportService extends BaseService
 {
+    /** created_at is stored in UTC; shift to local time before grouping by hour/day/month. */
+    private const LOCAL_CREATED_AT = "(created_at AT TIME ZONE 'UTC' AT TIME ZONE '" . self::LOCAL_TIMEZONE . "')";
+
     protected function model(): string
     {
         return Order::class;
@@ -26,7 +29,7 @@ class ReportService extends BaseService
             ->leftJoin('categories as c', 'c.id', '=', 'i.category_id')
             ->where('orders.tenant_id', $tenantId)
             ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
-            ->whereBetween('orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('orders.created_at', $this->localDayRangeUtc($from, $to));
 
         if (in_array($role, ['staff', 'delivery'])) {
             $query->where('orders.branch_id', $user->branch_id);
@@ -71,7 +74,7 @@ class ReportService extends BaseService
         $query = Order::query()
             ->where('tenant_id', $tenantId)
             ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_bank', 'paid_others', 'unpaid'])
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
 
         if (in_array($role, ['staff', 'delivery'])) {
             $query->where('branch_id', $user->branch_id);
@@ -117,7 +120,7 @@ class ReportService extends BaseService
         $fromDate  = new \DateTimeImmutable($from);
         $toDate    = new \DateTimeImmutable($to);
         $diffDays  = (int) $fromDate->diff($toDate)->days;
-        $dateRange = [$from . ' 00:00:00', $to . ' 23:59:59'];
+        $dateRange = $this->localDayRangeUtc($from, $to);
 
         $baseQuery = function () use ($tenantId, $role, $user, $branchId, $dateRange) {
             $q = Order::query()
@@ -207,7 +210,7 @@ class ReportService extends BaseService
     {
         $seriesQuery = Order::query()
             ->where('tenant_id', $tenantId)
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
 
         if (in_array($role, ['staff', 'delivery'])) {
             $seriesQuery->where('branch_id', $user->branch_id);
@@ -218,9 +221,9 @@ class ReportService extends BaseService
         if ($diffDays === 0) {
             // Single day → group by hour
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(created_at, 'HH24') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
-                ->groupByRaw("TO_CHAR(created_at, 'HH24')")
-                ->orderByRaw("TO_CHAR(created_at, 'HH24')")
+                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+                ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24')")
+                ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24')")
                 ->get();
 
             $map = $rows->keyBy('label');
@@ -237,9 +240,9 @@ class ReportService extends BaseService
         if ($diffDays <= 31) {
             // Week or month range → group by date
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
-                ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
-                ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
+                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+                ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD')")
+                ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD')")
                 ->get();
 
             $map    = $rows->keyBy('label');
@@ -262,9 +265,9 @@ class ReportService extends BaseService
 
         // Year+ range → group by month
         $rows = $seriesQuery
-            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
-            ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM')")
-            ->orderByRaw("TO_CHAR(created_at, 'YYYY-MM')")
+            ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+            ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM')")
+            ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM')")
             ->get();
 
         $map    = $rows->keyBy('label');

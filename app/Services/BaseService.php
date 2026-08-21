@@ -2,13 +2,26 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 abstract class BaseService
 {
+    /** Local timezone clients send date-only from/to filters in. */
+    protected const LOCAL_TIMEZONE = 'Asia/Manila';
+
     protected abstract function model(): string;
+
+    /** Converts local "YYYY-MM-DD" from/to into UTC boundaries covering the full local day. */
+    protected function localDayRangeUtc(string $from, string $to): array
+    {
+        $start = Carbon::parse($from, self::LOCAL_TIMEZONE)->startOfDay()->setTimezone('UTC');
+        $end   = Carbon::parse($to, self::LOCAL_TIMEZONE)->endOfDay()->setTimezone('UTC');
+
+        return [$start, $end];
+    }
 
     protected function tenantScope(): Builder
     {
