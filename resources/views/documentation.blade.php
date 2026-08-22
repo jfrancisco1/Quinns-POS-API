@@ -777,7 +777,7 @@
                 <tr><td class="field-name">amount</td><td>decimal</td><td class="required">Yes</td><td>Min 0</td></tr>
                 <tr><td class="field-name">expense_date</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD</td></tr>
                 <tr><td class="field-name">note</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">expense_category_id</td><td>integer</td><td class="required">Yes</td><td>Must reference an <a href="#expense-categories">expense category</a> belonging to the tenant</td></tr>
+                <tr><td class="field-name">expense_category_id</td><td>integer</td><td class="optional">No*</td><td>Must reference an <a href="#expense-categories">expense category</a> belonging to the tenant. *Temporarily optional for backward compatibility — omitted values default to the tenant's "Uncategorized" category. New clients should always send this; it will become strictly required once all clients are updated.</td></tr>
             </tbody>
         </table>
 
@@ -799,7 +799,7 @@
     {{-- Expense Categories --}}
     <section id="expense-categories">
         <div class="section-title">Expense Categories</div>
-        <p style="font-size:13px;color:#666;margin-bottom:6px;">User-managed list used to categorize expenses. Every tenant is seeded with the defaults below; users may rename, deactivate, reorder, or add their own. <code>expense_category_id</code> is required on every expense.</p>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">User-managed list used to categorize expenses. Every tenant is seeded with the defaults below; users may rename, deactivate, reorder, or add their own. <code>expense_category_id</code> should be sent on every new expense (temporarily optional — see <a href="#expenses">Expenses</a>).</p>
 
         <table class="endpoint-table">
             <thead>

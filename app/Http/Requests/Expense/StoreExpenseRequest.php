@@ -18,7 +18,9 @@ class StoreExpenseRequest extends FormRequest
             'amount'              => ['required', 'numeric', 'min:0'],
             'expense_date'        => ['required', 'date'],
             'note'                => ['nullable', 'string'],
-            'expense_category_id' => ['required', 'integer', 'exists:expense_categories,id'],
+            // Temporarily nullable for backward compatibility with clients created
+            // before this field existed — ExpenseService falls back to Uncategorized.
+            'expense_category_id' => ['nullable', 'integer', 'exists:expense_categories,id'],
         ];
     }
 }

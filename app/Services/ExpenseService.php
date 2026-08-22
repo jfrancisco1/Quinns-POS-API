@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ExpenseService extends BaseService
 {
+    public function __construct(
+        private readonly ExpenseCategoryService $expenseCategoryService
+    ) {
+    }
+
     protected function model(): string
     {
         return Expense::class;
@@ -31,13 +36,21 @@ class ExpenseService extends BaseService
     public function create(array $data): Expense
     {
         $user = Auth::user();
+        $tenantId = $user->tenant_id ?? 1;
 
         $payload = [
             ...$data,
             'user_id'   => $user->id ?? 1,
-            'tenant_id' => $user->tenant_id ?? 1,
+            'tenant_id' => $tenantId,
             'branch_id' => $user->branch_id ?? $data['branch_id'] ?? 1,
         ];
+
+        // Temporary compatibility fallback: older API clients (e.g. the staff app)
+        // predate expense_category_id becoming required. Remove once they're updated.
+        if (empty($payload['expense_category_id'])) {
+            $payload['expense_category_id'] = $this->expenseCategoryService
+                ->findOrCreateUncategorized($tenantId)->id;
+        }
 
         // Idempotent: client-generated UUID prevents duplicates on re-sync
         if (!empty($payload['id'])) {

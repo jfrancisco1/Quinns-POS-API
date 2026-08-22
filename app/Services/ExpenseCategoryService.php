@@ -66,4 +66,16 @@ class ExpenseCategoryService extends BaseService
             );
         }
     }
+
+    /**
+     * Fallback for expenses created without a category (older API clients not yet
+     * updated for the now-required field). Remove once all clients send one.
+     */
+    public function findOrCreateUncategorized(int $tenantId): ExpenseCategory
+    {
+        return ExpenseCategory::firstOrCreate(
+            ['tenant_id' => $tenantId, 'name' => ExpenseCategory::UNCATEGORIZED_NAME],
+            ['is_active' => true, 'sort_order' => count(ExpenseCategory::DEFAULT_NAMES)]
+        );
+    }
 }
