@@ -58,8 +58,15 @@ export const updateOrder = (id, data) => api.put(`/orders/${id}`, data)
 export const deleteOrder = (id) => api.delete(`/orders/${id}`)
 
 // Expenses
-export const getExpenses = () => api.get('/expenses')
+export const getExpenses = (params = {}) => api.get('/expenses', { params })
 export const getExpense = (id) => api.get(`/expenses/${id}`)
 export const createExpense = (data) => api.post('/expenses', data)
 export const updateExpense = (id, data) => api.put(`/expenses/${id}`, data)
 export const deleteExpense = (id) => api.delete(`/expenses/${id}`)
+
+// Expense Categories
+export const getExpenseCategories = () => api.get('/expense-categories')
+export const getExpenseCategory = (id) => api.get(`/expense-categories/${id}`)
+export const createExpenseCategory = (data) => api.post('/expense-categories', data)
+export const updateExpenseCategory = (id, data) => api.put(`/expense-categories/${id}`, data)
+export const deleteExpenseCategory = (id) => api.delete(`/expense-categories/${id}`)

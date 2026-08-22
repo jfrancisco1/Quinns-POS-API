@@ -13,12 +13,16 @@ class ExpenseService extends BaseService
         return Expense::class;
     }
 
-    public function getAll(?int $branchId = null): Collection
+    public function getAll(?int $branchId = null, ?int $categoryId = null): Collection
     {
-        $query = $this->tenantScope()->latest('expense_date');
+        $query = $this->tenantScope()->with('category')->latest('expense_date');
 
         if ($branchId && Auth::user()?->role === 'admin') {
             $query->where('branch_id', $branchId);
+        }
+
+        if ($categoryId) {
+            $query->where('expense_category_id', $categoryId);
         }
 
         return $query->get();
@@ -37,10 +41,12 @@ class ExpenseService extends BaseService
 
         // Idempotent: client-generated UUID prevents duplicates on re-sync
         if (!empty($payload['id'])) {
-            return Expense::updateOrCreate(['id' => $payload['id']], $payload);
+            $expense = Expense::updateOrCreate(['id' => $payload['id']], $payload);
+        } else {
+            $expense = Expense::create($payload);
         }
 
-        return Expense::create($payload);
+        return $expense->load('category');
     }
 
     public function update(Expense $expense, array $data): Expense
@@ -48,7 +54,7 @@ class ExpenseService extends BaseService
         $this->authorizeTenant($expense);
 
         $expense->update($data);
-        return $expense->fresh();
+        return $expense->fresh()->load('category');
     }
 
     public function delete(Expense $expense): void

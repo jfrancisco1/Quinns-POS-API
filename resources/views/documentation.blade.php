@@ -238,6 +238,7 @@
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
     <a href="#expenses">Expenses</a>
+    <a href="#expense-categories">Expense Categories</a>
     <a href="#reports">Reports</a>
     <a href="#categories">Categories</a>
     <a href="#items">Items</a>
@@ -762,6 +763,7 @@
             </thead>
             <tbody>
                 <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
+                <tr><td class="field-name">expense_category_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific expense category</td></tr>
             </tbody>
         </table>
 
@@ -775,6 +777,7 @@
                 <tr><td class="field-name">amount</td><td>decimal</td><td class="required">Yes</td><td>Min 0</td></tr>
                 <tr><td class="field-name">expense_date</td><td>date</td><td class="required">Yes</td><td>YYYY-MM-DD</td></tr>
                 <tr><td class="field-name">note</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">expense_category_id</td><td>integer</td><td class="required">Yes</td><td>Must reference an <a href="#expense-categories">expense category</a> belonging to the tenant</td></tr>
             </tbody>
         </table>
 
@@ -784,9 +787,77 @@
 <span class="key">"amount"</span>: <span class="num">500</span>,
 <span class="key">"expense_date"</span>: <span class="str">"2026-03-09"</span>,
 <span class="key">"note"</span>: <span class="null">null</span>,
+<span class="key">"expense_category_id"</span>: <span class="num">2</span>,
+<span class="key">"category"</span>: { <span class="key">"id"</span>: <span class="num">2</span>, <span class="key">"name"</span>: <span class="str">"Supplies"</span>, <span class="key">"is_active"</span>: <span class="bool">true</span>, <span class="key">"sort_order"</span>: <span class="num">1</span>, <span class="key">"created_at"</span>: <span class="str">"2026-03-09 00:00:00"</span>, <span class="key">"updated_at"</span>: <span class="str">"2026-03-09 00:00:00"</span> },
 <span class="key">"user_id"</span>: <span class="num">1</span>,
 <span class="key">"created_at"</span>: <span class="str">"2026-03-09 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2026-03-09 00:00:00"</span></div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Expense Categories --}}
+    <section id="expense-categories">
+        <div class="section-title">Expense Categories</div>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">User-managed list used to categorize expenses. Every tenant is seeded with the defaults below; users may rename, deactivate, reorder, or add their own. <code>expense_category_id</code> is required on every expense.</p>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/expense-categories</td>
+                    <td class="desc">List all expense categories</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/expense-categories</td>
+                    <td class="desc">Create an expense category</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/expense-categories/{id}</td>
+                    <td class="desc">Get an expense category</td>
+                </tr>
+                <tr>
+                    <td><span class="method put">PUT</span></td>
+                    <td class="path">/expense-categories/{id}</td>
+                    <td class="desc">Update an expense category</td>
+                </tr>
+                <tr>
+                    <td><span class="method delete">DELETE</span></td>
+                    <td class="path">/expense-categories/{id}</td>
+                    <td class="desc">Delete an expense category (fails if any expenses use it)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">name</td><td>string</td><td class="required">Yes</td><td>Must be unique per tenant</td></tr>
+                <tr><td class="field-name">is_active</td><td>boolean</td><td class="optional">No</td><td>Defaults to true</td></tr>
+                <tr><td class="field-name">sort_order</td><td>integer</td><td class="optional">No</td><td>Display priority; lower = first. Defaults to next available position</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response</div>
+        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
+<span class="key">"name"</span>: <span class="str">"Utilities"</span>,
+<span class="key">"is_active"</span>: <span class="bool">true</span>,
+<span class="key">"sort_order"</span>: <span class="num">0</span>,
+<span class="key">"created_at"</span>: <span class="str">"2026-03-09 00:00:00"</span>,
+<span class="key">"updated_at"</span>: <span class="str">"2026-03-09 00:00:00"</span></div>
+        <p style="font-size:13px;color:#666;margin-top:6px;">Default categories seeded per tenant: <code>Utilities</code>, <code>Supplies</code>, <code>Maintenance</code>, <code>Salaries</code>, <code>Others</code>. Tenants that had expenses before this feature shipped also received an <code>Uncategorized</code> category, assigned to their pre-existing expenses.</p>
     </section>
 
     <hr class="divider">
@@ -818,6 +889,11 @@
                     <td><span class="method get">GET</span></td>
                     <td class="path">/reports/sales-by-payment-type</td>
                     <td class="desc">Sales breakdown by payment type — transaction count, payment amount, and net amount per method</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/reports/expenses-by-category</td>
+                    <td class="desc">Expense breakdown by category — transaction count and total amount per category</td>
                 </tr>
             </tbody>
         </table>
@@ -961,6 +1037,26 @@
 <span class="comm">// paid_gcash, on the date of the second transition). payment_amount = subtotal - discount_amount,</span>
 <span class="comm">// matching "collected" in /reports/sales. Orders currently unpaid have no payment date and are</span>
 <span class="comm">// excluded entirely — the "unpaid" key is omitted from the response under this basis.</span>
+
+        <div class="fields-title">Response — GET /reports/expenses-by-category</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-03-31"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
+<span class="key">"breakdown"</span>: [
+  {
+    <span class="key">"category_id"</span>: <span class="num">1</span>,
+    <span class="key">"category"</span>: <span class="str">"Utilities"</span>,
+    <span class="key">"transactions"</span>: <span class="num">4</span>,
+    <span class="key">"amount"</span>: <span class="num">6700.00</span>
+  },
+  {
+    <span class="key">"category_id"</span>: <span class="num">2</span>,
+    <span class="key">"category"</span>: <span class="str">"Supplies"</span>,
+    <span class="key">"transactions"</span>: <span class="num">6</span>,
+    <span class="key">"amount"</span>: <span class="num">4250.00</span>
+  }
+],
+<span class="key">"total"</span>: <span class="num">10950.00</span></div>
     </section>
 
     <hr class="divider">

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ExpenseCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -198,40 +199,59 @@ class SampleDataSeeder extends Seeder
         $this->command->info("✓ Orders seeded: {$orderCount} (with order items)");
 
         // -------------------------------------------------------
-        // 5. EXPENSES (last 3 months)
+        // 5. EXPENSE CATEGORIES
+        // -------------------------------------------------------
+        $expenseCategories = [];
+        foreach (ExpenseCategory::DEFAULT_NAMES as $i => $name) {
+            $id = DB::table('expense_categories')->insertGetId([
+                'tenant_id'  => $tenantId,
+                'name'       => $name,
+                'is_active'  => true,
+                'sort_order' => $i,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $expenseCategories[$name] = $id;
+        }
+
+        $this->command->info('✓ Expense categories seeded: ' . \count($expenseCategories));
+
+        // -------------------------------------------------------
+        // 6. EXPENSES (last 3 months)
         // -------------------------------------------------------
         $expenseData = [
-            ['description' => 'Detergent supplies',    'amount' => 1200],
-            ['description' => 'Fabric softener',       'amount' => 800],
-            ['description' => 'Electricity bill',      'amount' => 3500],
-            ['description' => 'Water bill',            'amount' => 1500],
-            ['description' => 'Equipment maintenance', 'amount' => 2000],
-            ['description' => 'Plastic bags',          'amount' => 300],
-            ['description' => 'Staff overtime pay',    'amount' => 1500],
-            ['description' => 'Delivery gas',          'amount' => 600],
-            ['description' => 'Packaging materials',   'amount' => 450],
-            ['description' => 'Cleaning supplies',     'amount' => 700],
-            ['description' => 'Detergent supplies',    'amount' => 1100],
-            ['description' => 'Electricity bill',      'amount' => 3200],
-            ['description' => 'Water bill',            'amount' => 1400],
-            ['description' => 'Fabric softener',       'amount' => 750],
-            ['description' => 'Staff overtime pay',    'amount' => 2000],
+            ['description' => 'Detergent supplies',    'amount' => 1200, 'category' => 'Supplies'],
+            ['description' => 'Fabric softener',       'amount' => 800,  'category' => 'Supplies'],
+            ['description' => 'Electricity bill',      'amount' => 3500, 'category' => 'Utilities'],
+            ['description' => 'Water bill',            'amount' => 1500, 'category' => 'Utilities'],
+            ['description' => 'Equipment maintenance', 'amount' => 2000, 'category' => 'Maintenance'],
+            ['description' => 'Plastic bags',          'amount' => 300,  'category' => 'Supplies'],
+            ['description' => 'Staff overtime pay',    'amount' => 1500, 'category' => 'Salaries'],
+            ['description' => 'Delivery gas',          'amount' => 600,  'category' => 'Others'],
+            ['description' => 'Packaging materials',   'amount' => 450,  'category' => 'Supplies'],
+            ['description' => 'Cleaning supplies',     'amount' => 700,  'category' => 'Supplies'],
+            ['description' => 'Detergent supplies',    'amount' => 1100, 'category' => 'Supplies'],
+            ['description' => 'Electricity bill',      'amount' => 3200, 'category' => 'Utilities'],
+            ['description' => 'Water bill',            'amount' => 1400, 'category' => 'Utilities'],
+            ['description' => 'Fabric softener',       'amount' => 750,  'category' => 'Supplies'],
+            ['description' => 'Staff overtime pay',    'amount' => 2000, 'category' => 'Salaries'],
         ];
 
         $expenseRows = [];
         foreach ($expenseData as $exp) {
             $date = now()->subDays(rand(0, 90));
             $expenseRows[] = [
-                'id'           => Str::uuid()->toString(),
-                'description'  => $exp['description'],
-                'amount'       => $exp['amount'],
-                'expense_date' => $date->format('Y-m-d'),
-                'note'         => null,
-                'user_id'      => $userId,
-                'tenant_id'    => $tenantId,
-                'branch_id'    => $branchId,
-                'created_at'   => $date,
-                'updated_at'   => $date,
+                'id'                  => Str::uuid()->toString(),
+                'description'         => $exp['description'],
+                'amount'              => $exp['amount'],
+                'expense_date'        => $date->format('Y-m-d'),
+                'note'                => null,
+                'expense_category_id' => $expenseCategories[$exp['category']],
+                'user_id'             => $userId,
+                'tenant_id'           => $tenantId,
+                'branch_id'           => $branchId,
+                'created_at'          => $date,
+                'updated_at'          => $date,
             ];
         }
 

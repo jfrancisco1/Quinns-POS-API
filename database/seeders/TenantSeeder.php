@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ExpenseCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -110,7 +111,21 @@ class TenantSeeder extends Seeder
 
         DB::table('users')->insert($branchUsers);
 
-        // 3. Admin user (null branch = access all branches)
+        // 3. Default expense categories
+        $expenseCategoryRows = [];
+        foreach (ExpenseCategory::DEFAULT_NAMES as $i => $name) {
+            $expenseCategoryRows[] = [
+                'tenant_id'  => $tenantId,
+                'name'       => $name,
+                'is_active'  => true,
+                'sort_order' => $i,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        DB::table('expense_categories')->insert($expenseCategoryRows);
+
+        // 4. Admin user (null branch = access all branches)
         DB::table('users')->insert([
             'name'       => $adminUser['name'],
             'username'   => $adminUser['username'],

@@ -67,6 +67,21 @@ class ReportController extends Controller
         ], $summary));
     }
 
+    public function expensesByCategory(Request $request): JsonResponse
+    {
+        $request->validate([
+            'from'      => ['required', 'date'],
+            'to'        => ['required', 'date', 'after_or_equal:from'],
+            'branch_id' => ['nullable', 'integer'],
+        ]);
+
+        $branchId = $request->integer('branch_id') ?: null;
+        $branch   = $this->resolveBranch($branchId);
+        $result   = $this->reportService->expensesByCategory($request->from, $request->to, $branchId);
+
+        return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $result));
+    }
+
     private function resolveBranch(?int $branchId): ?array
     {
         $user = Auth::user();

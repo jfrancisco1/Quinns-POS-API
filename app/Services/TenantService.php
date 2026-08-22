@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TenantService
 {
+    public function __construct(
+        private readonly ExpenseCategoryService $expenseCategoryService
+    ) {
+    }
+
     public function getAll(): Collection
     {
         return Tenant::withCount(['branches', 'users'])->latest()->get();
@@ -19,7 +24,10 @@ class TenantService
 
     public function create(array $data): Tenant
     {
-        return Tenant::create($data);
+        $tenant = Tenant::create($data);
+        $this->expenseCategoryService->seedDefaults($tenant->id);
+
+        return $tenant;
     }
 
     public function update(Tenant $tenant, array $data): Tenant

@@ -21,6 +21,7 @@ class Expense extends Model
         'amount',
         'expense_date',
         'note',
+        'expense_category_id',
         'tenant_id',
         'branch_id',
     ];
@@ -33,6 +34,11 @@ class Expense extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
     }
 
     public function resolveRouteBinding($value, $field = null)

@@ -1,21 +1,34 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getExpenses, deleteExpense } from '../../api'
+import { getExpenses, deleteExpense, getExpenseCategories } from '../../api'
 import ConfirmModal from '../../components/ConfirmModal.vue'
 
 const expenses = ref([])
+const categories = ref([])
+const categoryFilter = ref('')
 const loading = ref(true)
 const deleteTarget = ref(null)
 const deleting = ref(false)
 
 onMounted(async () => {
   try {
-    const { data } = await getExpenses()
-    expenses.value = data.data
+    const [expensesRes, categoriesRes] = await Promise.all([getExpenses(), getExpenseCategories()])
+    expenses.value = expensesRes.data.data
+    categories.value = categoriesRes.data.data
   } finally {
     loading.value = false
   }
 })
+
+async function applyFilter() {
+  loading.value = true
+  try {
+    const { data } = await getExpenses(categoryFilter.value ? { expense_category_id: categoryFilter.value } : {})
+    expenses.value = data.data
+  } finally {
+    loading.value = false
+  }
+}
 
 async function confirmDelete() {
   deleting.value = true
@@ -48,6 +61,14 @@ function formatDate(val) {
       <RouterLink to="/expenses/create" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">+ Add Expense</RouterLink>
     </div>
 
+    <div class="bg-white rounded-xl border border-gray-200 px-6 py-4 mb-4 flex items-center gap-3">
+      <label class="text-sm text-gray-500">Category:</label>
+      <select v-model="categoryFilter" @change="applyFilter" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">All categories</option>
+        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+      </select>
+    </div>
+
     <div class="bg-white rounded-xl border border-gray-200">
       <div v-if="loading" class="px-6 py-12 text-center text-sm text-gray-400">Loading...</div>
       <div v-else-if="!expenses.length" class="px-6 py-12 text-center text-sm text-gray-400">No expenses yet.</div>
@@ -55,6 +76,7 @@ function formatDate(val) {
         <thead class="bg-gray-50 border-b border-gray-100">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
@@ -64,6 +86,9 @@ function formatDate(val) {
         <tbody class="divide-y divide-gray-100">
           <tr v-for="expense in expenses" :key="expense.id" class="hover:bg-gray-50">
             <td class="px-6 py-3 font-medium text-gray-900">{{ expense.description }}</td>
+            <td class="px-6 py-3">
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700">{{ expense.category?.name || '—' }}</span>
+            </td>
             <td class="px-6 py-3 font-medium text-red-600">{{ formatCurrency(expense.amount) }}</td>
             <td class="px-6 py-3 text-gray-600">{{ formatDate(expense.expense_date) }}</td>
             <td class="px-6 py-3 text-gray-500 max-w-xs truncate">{{ expense.note || '—' }}</td>

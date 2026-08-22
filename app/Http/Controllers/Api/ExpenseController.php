@@ -21,7 +21,8 @@ class ExpenseController extends Controller
     public function index(): AnonymousResourceCollection
     {
         $branchId = request()->integer('branch_id') ?: null;
-        $expenses = $this->expenseService->getAll($branchId);
+        $categoryId = request()->integer('expense_category_id') ?: null;
+        $expenses = $this->expenseService->getAll($branchId, $categoryId);
         return ExpenseResource::collection($expenses);
     }
 
@@ -33,7 +34,7 @@ class ExpenseController extends Controller
 
     public function show(Expense $expense): ExpenseResource
     {
-        return new ExpenseResource($expense);
+        return new ExpenseResource($expense->load('category'));
     }
 
     public function update(UpdateExpenseRequest $request, Expense $expense): ExpenseResource

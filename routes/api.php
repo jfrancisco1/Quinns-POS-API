@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\Owner\BranchController as OwnerBranchController;
@@ -40,10 +41,12 @@ Route::prefix('v1')->group(function () {
         Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
         Route::patch('orders/{order}/order-status', [OrderController::class, 'updateOrderStatus']);
         Route::apiResource('expenses', ExpenseController::class);
+        Route::apiResource('expense-categories', ExpenseCategoryController::class);
         Route::middleware('admin')->group(function () {
             Route::get('reports/sales', [ReportController::class, 'sales']);
             Route::get('reports/sales-by-item', [ReportController::class, 'salesByItem']);
             Route::get('reports/sales-by-payment-type', [ReportController::class, 'salesByPaymentType']);
+            Route::get('reports/expenses-by-category', [ReportController::class, 'expensesByCategory']);
         });
     });
 });

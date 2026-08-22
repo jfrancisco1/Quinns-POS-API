@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getExpense, createExpense, updateExpense } from '../../api'
+import { getExpense, createExpense, updateExpense, getExpenseCategories } from '../../api'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,29 +13,40 @@ const form = ref({
   amount: '',
   expense_date: '',
   note: '',
+  expense_category_id: '',
 })
 
+const categories = ref([])
+const selectableCategories = computed(() =>
+  categories.value.filter(c => c.is_active || c.id === form.value.expense_category_id)
+)
 const loading = ref(false)
-const fetchLoading = ref(isEdit.value)
+const fetchLoading = ref(true)
 const errors = ref({})
 const serverError = ref('')
 
 onMounted(async () => {
-  if (isEdit.value) {
-    try {
-      const { data } = await getExpense(route.params.id)
-      const e = data.data
+  try {
+    const requests = [getExpenseCategories()]
+    if (isEdit.value) requests.push(getExpense(route.params.id))
+
+    const [categoriesRes, expenseRes] = await Promise.all(requests)
+    categories.value = categoriesRes.data.data
+
+    if (expenseRes) {
+      const e = expenseRes.data.data
       form.value = {
         description: e.description || '',
         amount: e.amount || '',
         expense_date: e.expense_date || '',
         note: e.note || '',
+        expense_category_id: e.expense_category_id || '',
       }
-    } catch {
-      serverError.value = 'Failed to load expense.'
-    } finally {
-      fetchLoading.value = false
     }
+  } catch {
+    serverError.value = 'Failed to load expense.'
+  } finally {
+    fetchLoading.value = false
   }
 })
 
@@ -100,6 +111,18 @@ async function handleSubmit() {
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Date <span class="text-red-500">*</span></label>
           <input v-model="form.expense_date" type="date" required class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="errors.expense_date ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.expense_date" class="mt-1 text-xs text-red-600">{{ errors.expense_date[0] }}</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
+            <RouterLink to="/expense-categories" class="text-xs text-blue-600 hover:text-blue-700">Manage categories</RouterLink>
+          </div>
+          <select v-model="form.expense_category_id" required class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="errors.expense_category_id ? 'border-red-400' : 'border-gray-300'">
+            <option value="" disabled>Select a category</option>
+            <option v-for="cat in selectableCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          </select>
+          <p v-if="errors.expense_category_id" class="mt-1 text-xs text-red-600">{{ errors.expense_category_id[0] }}</p>
         </div>
 
         <div>

@@ -69,6 +69,37 @@ const chartData = computed(() => {
   }
 })
 
+const categoryColors = [
+  'rgba(59,130,246,0.7)',
+  'rgba(16,185,129,0.7)',
+  'rgba(245,158,11,0.7)',
+  'rgba(239,68,68,0.7)',
+  'rgba(139,92,246,0.7)',
+  'rgba(236,72,153,0.7)',
+]
+
+const categorySummary = computed(() => {
+  const map = {}
+  filteredExpenses.value.forEach(e => {
+    const name = e.category?.name || 'Uncategorized'
+    if (!map[name]) map[name] = { count: 0, amount: 0 }
+    map[name].count += 1
+    map[name].amount += parseFloat(e.amount || 0)
+  })
+  return Object.entries(map).map(([category, d]) => ({ category, ...d })).sort((a, b) => b.amount - a.amount)
+})
+
+const categoryChartData = computed(() => ({
+  labels: categorySummary.value.map(c => c.category),
+  datasets: [
+    {
+      label: 'Expenses (₱)',
+      data: categorySummary.value.map(c => c.amount),
+      backgroundColor: categorySummary.value.map((_, i) => categoryColors[i % categoryColors.length]),
+    },
+  ]
+}))
+
 const chartOptions = { responsive: true, plugins: { legend: { position: 'top' } } }
 function fmt(v) { return '₱' + parseFloat(v || 0).toFixed(2) }
 function formatDate(val) {
@@ -125,6 +156,36 @@ function formatDate(val) {
         <div v-else class="text-center text-sm text-gray-400 py-8">No data for selected period.</div>
       </div>
 
+      <!-- By Category -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <h2 class="font-semibold text-gray-900 mb-4">Expenses by Category</h2>
+        <Bar v-if="categoryChartData.labels.length" :data="categoryChartData" :options="chartOptions" />
+        <div v-else class="text-center text-sm text-gray-400 py-8">No data for selected period.</div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-900">Category Summary</h2>
+        </div>
+        <div v-if="!categorySummary.length" class="px-6 py-8 text-center text-sm text-gray-400">No data.</div>
+        <table v-else class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Records</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-for="cat in categorySummary" :key="cat.category" class="hover:bg-gray-50">
+              <td class="px-6 py-3 font-medium text-gray-900">{{ cat.category }}</td>
+              <td class="px-6 py-3 text-gray-600">{{ cat.count }}</td>
+              <td class="px-6 py-3 font-medium text-red-600">{{ fmt(cat.amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Expense List -->
       <div class="bg-white rounded-xl border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-100">
@@ -135,6 +196,7 @@ function formatDate(val) {
           <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
@@ -143,6 +205,7 @@ function formatDate(val) {
           <tbody class="divide-y divide-gray-100">
             <tr v-for="expense in filteredExpenses" :key="expense.id" class="hover:bg-gray-50">
               <td class="px-6 py-3 font-medium text-gray-900">{{ expense.description }}</td>
+              <td class="px-6 py-3 text-gray-500">{{ expense.category?.name || '—' }}</td>
               <td class="px-6 py-3 font-medium text-red-600">{{ fmt(expense.amount) }}</td>
               <td class="px-6 py-3 text-gray-600">{{ formatDate(expense.expense_date) }}</td>
               <td class="px-6 py-3 text-gray-500 max-w-xs truncate">{{ expense.note || '—' }}</td>

@@ -264,6 +264,47 @@ class ReportService extends BaseService
         ];
     }
 
+    public function expensesByCategory(string $from, string $to, ?int $branchId = null): array
+    {
+        $user     = Auth::user();
+        $tenantId = $user?->tenant_id ?? 1;
+        $role     = $user?->role ?? 'admin';
+
+        $query = Expense::query()
+            ->join('expense_categories as ec', 'ec.id', '=', 'expenses.expense_category_id')
+            ->where('expenses.tenant_id', $tenantId)
+            ->whereBetween('expenses.expense_date', [$from, $to]);
+
+        if (in_array($role, ['staff', 'delivery'])) {
+            $query->where('expenses.branch_id', $user->branch_id);
+        } elseif ($role === 'admin' && $branchId !== null) {
+            $query->where('expenses.branch_id', $branchId);
+        }
+
+        $rows = $query
+            ->selectRaw('
+                ec.id as category_id,
+                ec.name as category,
+                COUNT(*) as transactions,
+                COALESCE(SUM(expenses.amount), 0) as amount
+            ')
+            ->groupBy('ec.id', 'ec.name')
+            ->orderByDesc('amount')
+            ->get();
+
+        $breakdown = $rows->map(fn ($row) => [
+            'category_id'  => $row->category_id,
+            'category'     => $row->category,
+            'transactions' => (int) $row->transactions,
+            'amount'       => (float) $row->amount,
+        ])->all();
+
+        return [
+            'breakdown' => $breakdown,
+            'total'     => (float) $rows->sum('amount'),
+        ];
+    }
+
     private function buildSeries(string $from, string $to, int $diffDays, int $tenantId, string $role, $user, ?int $branchId): array
     {
         $seriesQuery = Order::query()

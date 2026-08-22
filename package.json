@@ -3,7 +3,19 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "docker:build": "docker compose build laravel.test",
+        "docker:up": "docker compose up -d",
+        "docker:down": "docker compose down",
+        "docker:stop": "docker compose stop",
+        "docker:logs": "docker compose logs -f laravel.test",
+        "docker:shell": "docker compose exec laravel.test bash",
+        "docker:artisan": "docker compose exec laravel.test php artisan",
+        "docker:migrate": "docker compose exec laravel.test php artisan migrate",
+        "docker:seed": "docker compose exec laravel.test php artisan db:seed",
+        "docker:fresh": "docker compose exec laravel.test php artisan migrate:fresh --seed",
+        "docker:tinker": "docker compose exec laravel.test php artisan tinker",
+        "docker:psql": "docker compose exec pgsql psql -U sail -d quinns_pos"
     },
     "dependencies": {
         "chart.js": "^4.4.3",

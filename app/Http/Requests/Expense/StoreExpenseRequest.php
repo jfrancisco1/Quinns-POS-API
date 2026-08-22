@@ -14,10 +14,11 @@ class StoreExpenseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description'  => ['required', 'string', 'max:255'],
-            'amount'       => ['required', 'numeric', 'min:0'],
-            'expense_date' => ['required', 'date'],
-            'note'         => ['nullable', 'string'],
+            'description'         => ['required', 'string', 'max:255'],
+            'amount'              => ['required', 'numeric', 'min:0'],
+            'expense_date'        => ['required', 'date'],
+            'note'                => ['nullable', 'string'],
+            'expense_category_id' => ['required', 'integer', 'exists:expense_categories,id'],
         ];
     }
 }
