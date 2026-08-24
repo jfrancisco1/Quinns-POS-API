@@ -24,15 +24,32 @@ class OrderService extends BaseService
         ?string $fulfillmentType = null,
         ?string $search = null,
         ?int $branchId = null,
+        string $dateBasis = 'created',
     ): CursorPaginator {
-        $query = $this->tenantScope()->with(['customer', 'items', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy'])->orderBy('created_at', 'desc')->orderBy('order_number', 'desc');
+        $query = $this->tenantScope()->with(['customer', 'items', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy'])->orderBy('orders.created_at', 'desc')->orderBy('orders.order_number', 'desc');
 
         if ($branchId && Auth::user()?->role === 'admin') {
             $query->where('branch_id', $branchId);
         }
 
         if ($from && $to) {
-            $query->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
+            if ($dateBasis === 'paid') {
+                $latestPayment = DB::table('payment_history as ph')
+                    ->join('orders as o', 'o.order_number', '=', 'ph.order_number')
+                    ->whereColumn('ph.to_status', 'o.payment_status')
+                    ->groupBy('ph.order_number')
+                    ->selectRaw('ph.order_number, MAX(ph.changed_at) as changed_at');
+
+                $query
+                    ->select('orders.*')
+                    ->joinSub($latestPayment, 'latest_payment', function ($join) {
+                        $join->on('latest_payment.order_number', '=', 'orders.order_number');
+                    })
+                    ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_bank', 'paid_others'])
+                    ->whereBetween('latest_payment.changed_at', $this->localDayRangeUtc($from, $to));
+            } else {
+                $query->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
+            }
         }
 
         if ($paymentStatus) {

@@ -90,16 +90,18 @@ class ReportService extends BaseService
             ->selectRaw('
                 payment_status,
                 COUNT(*) as transactions,
-                COALESCE(SUM(subtotal), 0) as payment_amount
+                COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as payment_amount,
+                COALESCE(SUM(delivery_fee), 0) as delivery_fee_amount
             ')
             ->groupBy('payment_status')
             ->orderBy('payment_status')
             ->get();
 
         $breakdown = $rows->map(fn ($row) => [
-            'payment_method'  => $row->payment_status,
-            'transactions'    => (int) $row->transactions,
-            'payment_amount'  => (float) $row->payment_amount,
+            'payment_method'      => $row->payment_status,
+            'transactions'        => (int) $row->transactions,
+            'payment_amount'      => (float) $row->payment_amount,
+            'delivery_fee_amount' => (float) $row->delivery_fee_amount,
         ])->all();
 
         $unpaidRow = $rows->firstWhere('payment_status', 'unpaid');
@@ -154,16 +156,18 @@ class ReportService extends BaseService
             ->selectRaw('
                 orders.payment_status,
                 COUNT(*) as transactions,
-                COALESCE(SUM(orders.subtotal - orders.discount_amount), 0) as payment_amount
+                COALESCE(SUM(orders.subtotal + orders.delivery_fee - orders.discount_amount), 0) as payment_amount,
+                COALESCE(SUM(orders.delivery_fee), 0) as delivery_fee_amount
             ')
             ->groupBy('orders.payment_status')
             ->orderBy('orders.payment_status')
             ->get();
 
         $breakdown = $rows->map(fn ($row) => [
-            'payment_method' => $row->payment_status,
-            'transactions'   => (int) $row->transactions,
-            'payment_amount' => (float) $row->payment_amount,
+            'payment_method'      => $row->payment_status,
+            'transactions'        => (int) $row->transactions,
+            'payment_amount'      => (float) $row->payment_amount,
+            'delivery_fee_amount' => (float) $row->delivery_fee_amount,
         ])->all();
 
         return ['breakdown' => $breakdown];
@@ -196,7 +200,7 @@ class ReportService extends BaseService
 
         // Gross Sales and Discounts — all orders (paid + unpaid)
         $allRow = $baseQuery()->selectRaw('
-            COALESCE(SUM(subtotal), 0) as gross_sales,
+            COALESCE(SUM(subtotal + delivery_fee), 0) as gross_sales,
             COALESCE(SUM(discount_amount), 0) as total_discounts
         ')->first();
 
@@ -232,15 +236,20 @@ class ReportService extends BaseService
 
         $totalExpenses = (float) $expenseQuery->sum('amount');
 
-        // Collected (paid) — net of discounts
+        // Collected (paid) — actual amount collected from the customer, i.e. order.total
         $collected = (float) $baseQuery()
             ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
-            ->sum(DB::raw('subtotal - discount_amount'));
+            ->sum(DB::raw('subtotal + delivery_fee - discount_amount'));
 
-        // Outstanding (unpaid) — net of discounts
+        // Portion of collected that is delivery fee (pass-through), for net-revenue breakdowns
+        $deliveryFeesCollected = (float) $baseQuery()
+            ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
+            ->sum('delivery_fee');
+
+        // Outstanding (unpaid) — actual amount still owed, i.e. order.total
         $unpaidRow = $baseQuery()
             ->where('payment_status', 'unpaid')
-            ->selectRaw('COUNT(*) as orders, COALESCE(SUM(subtotal - discount_amount), 0) as outstanding')
+            ->selectRaw('COUNT(*) as orders, COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as outstanding')
             ->first();
 
         $grossProfit = $netSales - $costOfGoods;
@@ -249,18 +258,19 @@ class ReportService extends BaseService
         $groupBy     = $diffDays === 0 ? 'hour' : ($diffDays <= 31 ? 'day' : 'month');
 
         return [
-            'grossSales'   => $grossSales,
-            'discounts'    => $totalDiscounts,
-            'netSales'     => $netSales,
-            'costOfGoods'  => $costOfGoods,
-            'grossProfit'  => $grossProfit,
-            'expenses'     => $totalExpenses,
-            'netProfit'    => $netProfit,
-            'collected'    => $collected,
-            'outstanding'  => (float) $unpaidRow->outstanding,
-            'unpaidOrders' => (int) $unpaidRow->orders,
-            'group_by'     => $groupBy,
-            'series'       => $series,
+            'grossSales'            => $grossSales,
+            'discounts'             => $totalDiscounts,
+            'netSales'              => $netSales,
+            'costOfGoods'           => $costOfGoods,
+            'grossProfit'           => $grossProfit,
+            'expenses'              => $totalExpenses,
+            'netProfit'             => $netProfit,
+            'collected'             => $collected,
+            'deliveryFeesCollected' => $deliveryFeesCollected,
+            'outstanding'           => (float) $unpaidRow->outstanding,
+            'unpaidOrders'          => (int) $unpaidRow->orders,
+            'group_by'              => $groupBy,
+            'series'                => $series,
         ];
     }
 
@@ -320,7 +330,7 @@ class ReportService extends BaseService
         if ($diffDays === 0) {
             // Single day → group by hour
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24') as label, COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as net_sales")
                 ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24')")
                 ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'HH24')")
                 ->get();
@@ -339,7 +349,7 @@ class ReportService extends BaseService
         if ($diffDays <= 31) {
             // Week or month range → group by date
             $rows = $seriesQuery
-                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+                ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD') as label, COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as net_sales")
                 ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD')")
                 ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM-DD')")
                 ->get();
@@ -364,7 +374,7 @@ class ReportService extends BaseService
 
         // Year+ range → group by month
         $rows = $seriesQuery
-            ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM') as label, COALESCE(SUM(subtotal - discount_amount), 0) as net_sales")
+            ->selectRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM') as label, COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as net_sales")
             ->groupByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM')")
             ->orderByRaw("TO_CHAR(" . self::LOCAL_CREATED_AT . ", 'YYYY-MM')")
             ->get();

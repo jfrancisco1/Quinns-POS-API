@@ -30,8 +30,9 @@ class OrderController extends Controller
         $fulfillmentType = request()->query('fulfillment_type');
         $search          = request()->query('search') ?: null;
         $branchId        = request()->integer('branch_id') ?: null;
+        $dateBasis       = request()->query('date_basis') === 'paid' ? 'paid' : 'created';
 
-        $paginator = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType, $search, $branchId);
+        $paginator = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType, $search, $branchId, $dateBasis);
         $this->enrichItemMeta($paginator->getCollection()->pluck('items')->flatten());
 
         return response()->json([

@@ -571,6 +571,7 @@
             <tbody>
                 <tr><td class="field-name">from</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD — start of date range (inclusive). Must be used with <code>to</code></td></tr>
                 <tr><td class="field-name">to</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD — end of date range (inclusive). Must be used with <code>from</code></td></tr>
+                <tr><td class="field-name">date_basis</td><td>string</td><td class="optional">No</td><td><code>created</code> (default) filters <code>from</code>/<code>to</code> by order creation date. <code>paid</code> filters by the date each order most recently transitioned into its current paid status — same semantics as <code>date_basis</code> on <code>/reports/sales-by-payment-type</code>. With <code>paid</code>, results are restricted to orders currently in a paid status (unpaid orders have no payment date and are excluded)</td></tr>
                 <tr><td class="field-name">payment_status</td><td>string</td><td class="optional">No</td><td>Filter by payment status. Values: <code>unpaid</code>, <code>paid</code></td></tr>
                 <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>in_progress</code>, <code>completed</code></td></tr>
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
@@ -924,31 +925,37 @@
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01 00:00:00"</span>,
 <span class="key">"to"</span>: <span class="str">"2026-03-31 23:59:59"</span>,
 <span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
-<span class="key">"grossSales"</span>: <span class="num">12500.00</span>,
-<span class="comm">// grossSales = sum of subtotal for ALL orders (paid + unpaid)</span>
+<span class="key">"grossSales"</span>: <span class="num">13250.00</span>,
+<span class="comm">// grossSales = sum of (subtotal + deliveryFee) for ALL orders (paid + unpaid) — delivery fee counts as revenue</span>
 <span class="key">"discounts"</span>: <span class="num">500.00</span>,
 <span class="comm">// discounts = sum of discount_amount for all orders</span>
-<span class="key">"netSales"</span>: <span class="num">12000.00</span>,
+<span class="key">"netSales"</span>: <span class="num">12750.00</span>,
 <span class="comm">// netSales = grossSales - discounts</span>
 <span class="key">"costOfGoods"</span>: <span class="num">5000.00</span>,
-<span class="key">"grossProfit"</span>: <span class="num">7000.00</span>,
+<span class="comm">// costOfGoods is item-level (qty * item.cost) and is unrelated to delivery fee — unchanged</span>
+<span class="key">"grossProfit"</span>: <span class="num">7750.00</span>,
 <span class="comm">// grossProfit = netSales - costOfGoods</span>
 <span class="key">"expenses"</span>: <span class="num">1200.00</span>,
-<span class="key">"netProfit"</span>: <span class="num">5800.00</span>,
-<span class="comm">// netProfit = grossProfit - expenses</span>
-<span class="key">"collected"</span>: <span class="num">10500.00</span>,
-<span class="comm">// collected = net amount (subtotal - discount) from paid orders</span>
-<span class="key">"outstanding"</span>: <span class="num">1500.00</span>,
-<span class="comm">// outstanding = net amount (subtotal - discount) from unpaid orders; collected + outstanding = netSales</span>
+<span class="key">"netProfit"</span>: <span class="num">6550.00</span>,
+<span class="comm">// netProfit = grossProfit - expenses. Delivery fee now counts as revenue here — if the cost of</span>
+<span class="comm">// fulfilling deliveries (e.g. rider payouts) isn't logged as an Expense, netProfit will read</span>
+<span class="comm">// higher than actual take-home by roughly the period's total delivery fees.</span>
+<span class="key">"collected"</span>: <span class="num">10750.00</span>,
+<span class="comm">// collected = actual amount collected from paid orders (subtotal + deliveryFee - discount), matching order.total</span>
+<span class="key">"deliveryFeesCollected"</span>: <span class="num">250.00</span>,
+<span class="comm">// deliveryFeesCollected = portion of "collected" that is delivery fee (pass-through, not net revenue)</span>
+<span class="key">"outstanding"</span>: <span class="num">1650.00</span>,
+<span class="comm">// outstanding = actual amount still owed on unpaid orders (subtotal + deliveryFee - discount), matching order.total; collected + outstanding = netSales</span>
 <span class="key">"unpaidOrders"</span>: <span class="num">3</span>,
 <span class="comm">// unpaidOrders = count of unpaid orders</span>
 <span class="key">"group_by"</span>: <span class="str">"day"</span>,
 <span class="comm">// "hour" when from == to (single day), "day" when range ≤ 31 days, "month" when range > 31 days</span>
 <span class="key">"series"</span>: [
-  { <span class="key">"label"</span>: <span class="str">"2026-03-01"</span>, <span class="key">"net_sales"</span>: <span class="num">400.00</span> },
+  { <span class="key">"label"</span>: <span class="str">"2026-03-01"</span>, <span class="key">"net_sales"</span>: <span class="num">475.00</span> },
   { <span class="key">"label"</span>: <span class="str">"2026-03-02"</span>, <span class="key">"net_sales"</span>: <span class="num">750.00</span> }
   <span class="comm">// label format: "HH:00" (hour), "YYYY-MM-DD" (day), "YYYY-MM" (month)</span>
   <span class="comm">// zero-filled — all periods in range are included even if no sales</span>
+  <span class="comm">// net_sales = subtotal + deliveryFee - discount per period, consistent with top-level netSales</span>
 ]</div>
 
         <div class="fields-title">Response — GET /reports/sales-by-item</div>
@@ -977,6 +984,10 @@
     <span class="key">"gross_profit"</span>: <span class="num">2000.00</span>
   }
 ]</div>
+<span class="comm">// net_sales / cost_of_goods / gross_profit are item-level, revenue-only figures and do NOT</span>
+<span class="comm">// include delivery fee — delivery fee is an order-level charge, not attributable to individual</span>
+<span class="comm">// items, so it cannot be allocated here. By design, sum(items[].net_sales) will be SHORT of</span>
+<span class="comm">// sales.netSales by the period's total delivery fees — this is expected, not a bug.</span>
 
         <div class="fields-title">Response — GET /reports/sales-by-payment-type</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
@@ -986,34 +997,43 @@
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_cash"</span>,
     <span class="key">"transactions"</span>: <span class="num">80</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">8000.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">8400.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">400.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_gcash"</span>,
     <span class="key">"transactions"</span>: <span class="num">30</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">4500.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">4725.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">225.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_bank"</span>,
     <span class="key">"transactions"</span>: <span class="num">10</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">2000.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">2100.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">100.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_others"</span>,
     <span class="key">"transactions"</span>: <span class="num">5</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">750.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">775.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">25.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"unpaid"</span>,
     <span class="key">"transactions"</span>: <span class="num">3</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">1500.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">1650.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">150.00</span>
   }
 ],
 <span class="key">"unpaid"</span>: {
   <span class="key">"transactions"</span>: <span class="num">3</span>,
-  <span class="key">"amount"</span>: <span class="num">1500.00</span>
+  <span class="key">"amount"</span>: <span class="num">1650.00</span>
 }</div>
-<span class="comm">// unpaid block is included only for the default date_basis=created</span>
+<span class="comm">// unpaid block is included only for the default date_basis=created. payment_amount (and</span>
+<span class="comm">// unpaid.amount) = subtotal + delivery_fee - discount_amount per method, matching order.total</span>
+<span class="comm">// for orders in that method — same formula as "collected"/"outstanding" in /reports/sales.</span>
+<span class="comm">// delivery_fee_amount is the portion of payment_amount that is delivery fee (pass-through) —</span>
+<span class="comm">// subtract it for a net-revenue figure per payment method.</span>
 
         <div class="fields-title">Response — GET /reports/sales-by-payment-type?date_basis=paid</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
@@ -1023,20 +1043,25 @@
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_cash"</span>,
     <span class="key">"transactions"</span>: <span class="num">78</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">7800.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">7995.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">195.00</span>
   },
   {
     <span class="key">"payment_method"</span>: <span class="str">"paid_gcash"</span>,
     <span class="key">"transactions"</span>: <span class="num">31</span>,
-    <span class="key">"payment_amount"</span>: <span class="num">4650.00</span>
+    <span class="key">"payment_amount"</span>: <span class="num">4725.00</span>,
+    <span class="key">"delivery_fee_amount"</span>: <span class="num">75.00</span>
   }
 ]</div>
 <span class="comm">// date_basis=paid: breakdown is keyed by an order's CURRENT payment_status, bucketed by the</span>
 <span class="comm">// changed_at of the most recent payment_history row where to_status = that current status</span>
 <span class="comm">// (so a correction like unpaid -&gt; paid_cash -&gt; unpaid -&gt; paid_gcash counts once, under</span>
-<span class="comm">// paid_gcash, on the date of the second transition). payment_amount = subtotal - discount_amount,</span>
-<span class="comm">// matching "collected" in /reports/sales. Orders currently unpaid have no payment date and are</span>
-<span class="comm">// excluded entirely — the "unpaid" key is omitted from the response under this basis.</span>
+<span class="comm">// paid_gcash, on the date of the second transition). payment_amount = subtotal + delivery_fee -</span>
+<span class="comm">// discount_amount, i.e. the actual amount collected per order.total, matching "collected" in</span>
+<span class="comm">// /reports/sales. delivery_fee_amount is the portion of payment_amount that is delivery fee</span>
+<span class="comm">// (pass-through) — subtract it for a net-revenue figure per payment method. Orders currently</span>
+<span class="comm">// unpaid have no payment date and are excluded entirely — the "unpaid" key is omitted from the</span>
+<span class="comm">// response under this basis.</span>
 
         <div class="fields-title">Response — GET /reports/expenses-by-category</div>
         <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-03-01"</span>,
