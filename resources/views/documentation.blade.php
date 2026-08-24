@@ -234,6 +234,7 @@
     <div class="sidebar-title">Quinn's Laundry</div>
     <a href="#overview">Overview</a>
     <a href="#auth">Authentication</a>
+    <a href="#store">Store</a>
     <a href="#branches">Branches</a>
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
@@ -348,6 +349,69 @@
                 <tr><td>401</td><td>Missing or invalid token on protected routes</td></tr>
             </tbody>
         </table>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Store --}}
+    <section id="store">
+        <div class="section-title">Store</div>
+
+        <p class="desc" style="margin-bottom: 20px;">
+            Lets an <strong>admin</strong> view and update their own tenant's store details. Restricted to the <strong>admin</strong> role.
+        </p>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/store</td>
+                    <td class="desc">Get the authenticated admin's store (tenant) details</td>
+                    <td class="desc">Admin</td>
+                </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/store</td>
+                    <td class="desc">Update the authenticated admin's store (tenant) details</td>
+                    <td class="desc">Admin</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Fields</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">name</td><td>string</td><td class="optional">No</td><td>Max 255 characters</td></tr>
+                <tr><td class="field-name">email</td><td>string</td><td class="optional">No</td><td>Must be unique across tenants</td></tr>
+                <tr><td class="field-name">phone</td><td>string</td><td class="optional">No</td><td>Max 20 characters, must be unique across tenants</td></tr>
+                <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td>Max 500 characters</td></tr>
+                <tr><td class="field-name">gcash_number</td><td>string</td><td class="optional">No</td><td>Max 20 characters. GCash payment number used for customer-facing payments</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Response</div>
+        <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
+<span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>,
+<span class="key">"slug"</span>: <span class="str">"quinns-laundry"</span>,
+<span class="key">"email"</span>: <span class="str">"admin@quinnslaundry.com"</span>,
+<span class="key">"phone"</span>: <span class="str">"09171234567"</span>,
+<span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
+<span class="key">"gcash_number"</span>: <span class="str">"09171234567"</span>,
+<span class="key">"plan"</span>: <span class="str">"basic"</span>,
+<span class="key">"is_active"</span>: <span class="bool">true</span>,
+<span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
+<span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
     </section>
 
     <hr class="divider">

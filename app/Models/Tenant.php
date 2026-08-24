@@ -16,6 +16,7 @@ class Tenant extends Model
         'email',
         'phone',
         'address',
+        'gcash_number',
         'plan',
         'is_active',
     ];

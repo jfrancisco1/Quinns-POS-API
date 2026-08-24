@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Api\Owner\TenantController as OwnerTenantController;
 use App\Http\Controllers\Api\Owner\UserController as OwnerUserController;
@@ -43,6 +44,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('expenses', ExpenseController::class);
         Route::apiResource('expense-categories', ExpenseCategoryController::class);
         Route::middleware('admin')->group(function () {
+            Route::get('store', [StoreController::class, 'show']);
+            Route::put('store', [StoreController::class, 'update']);
+            Route::patch('store', [StoreController::class, 'update']);
             Route::get('reports/sales', [ReportController::class, 'sales']);
             Route::get('reports/sales-by-item', [ReportController::class, 'salesByItem']);
             Route::get('reports/sales-by-payment-type', [ReportController::class, 'salesByPaymentType']);

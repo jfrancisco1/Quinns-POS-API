@@ -22,6 +22,7 @@ class UpdateTenantRequest extends FormRequest
             'email'     => ['sometimes', 'email', Rule::unique('tenants', 'email')->ignore($tenantId)],
             'phone'     => ['nullable', 'string', 'max:20', Rule::unique('tenants', 'phone')->ignore($tenantId)],
             'address'   => ['nullable', 'string', 'max:500'],
+            'gcash_number' => ['nullable', 'string', 'max:20'],
             'plan'      => ['sometimes', 'in:free,basic,pro'],
             'is_active' => ['sometimes', 'boolean'],
         ];

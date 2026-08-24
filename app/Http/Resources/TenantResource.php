@@ -16,6 +16,7 @@ class TenantResource extends JsonResource
             'email'         => $this->email,
             'phone'         => $this->phone,
             'address'       => $this->address,
+            'gcash_number'  => $this->gcash_number,
             'plan'          => $this->plan,
             'is_active'     => $this->is_active,
             'branches_count' => $this->whenCounted('branches'),

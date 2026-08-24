@@ -19,6 +19,7 @@ class StoreTenantRequest extends FormRequest
             'email'   => ['required', 'email', 'unique:tenants,email'],
             'phone'   => ['nullable', 'string', 'max:20', 'unique:tenants,phone'],
             'address' => ['nullable', 'string', 'max:500'],
+            'gcash_number' => ['nullable', 'string', 'max:20'],
             'plan'    => ['required', 'in:free,basic,pro'],
         ];
     }

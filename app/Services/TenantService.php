@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class TenantService
 {
@@ -39,5 +40,18 @@ class TenantService
     public function delete(Tenant $tenant): void
     {
         $tenant->delete();
+    }
+
+    public function getCurrentForUser(): Tenant
+    {
+        return Tenant::findOrFail(Auth::user()->tenant_id);
+    }
+
+    public function updateCurrentForUser(array $data): Tenant
+    {
+        $tenant = Tenant::findOrFail(Auth::user()->tenant_id);
+        $tenant->update($data);
+
+        return $tenant->fresh();
     }
 }
