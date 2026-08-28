@@ -554,6 +554,8 @@
                 <tr><td class="field-name">nickname</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">latitude</td><td>decimal</td><td class="optional">No</td><td>Between -90 and 90</td></tr>
+                <tr><td class="field-name">longitude</td><td>decimal</td><td class="optional">No</td><td>Between -180 and 180</td></tr>
                 <tr><td class="field-name">notes</td><td>string</td><td class="optional">No</td><td></td></tr>
                 <tr><td class="field-name">delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Defaults to 75.00</td></tr>
             </tbody>
@@ -563,6 +565,8 @@
         <div class="code-block"><span class="key">"mobile"</span>: <span class="str">"09171234567"</span>,
 <span class="key">"nickname"</span>: <span class="str">"Maria Santos"</span>,
 <span class="key">"address"</span>: <span class="str">"123 Main St"</span>,
+<span class="key">"latitude"</span>: <span class="str">"13.6462186"</span>,
+<span class="key">"longitude"</span>: <span class="str">"123.2026878"</span>,
 <span class="key">"notes"</span>: <span class="str">""</span>,
 <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,

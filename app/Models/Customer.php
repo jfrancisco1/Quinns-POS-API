@@ -21,6 +21,8 @@ class Customer extends Model
         'nickname',
         'mobile',
         'address',
+        'latitude',
+        'longitude',
         'notes',
         'delivery_fee',
         'tenant_id',
@@ -29,6 +31,11 @@ class Customer extends Model
 
     protected $hidden = [
         'deleted_at',
+    ];
+
+    protected $casts = [
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     public function orders()

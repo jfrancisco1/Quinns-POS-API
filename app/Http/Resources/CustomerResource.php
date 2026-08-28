@@ -19,6 +19,8 @@ class CustomerResource extends JsonResource
             'mobile'      => $this->mobile,
             'nickname'    => $this->nickname,
             'address'     => $this->address,
+            'latitude'    => $this->latitude,
+            'longitude'   => $this->longitude,
             'notes'       => $this->notes,
             'deliveryFee' => $this->delivery_fee,
             'last_visit'  => $this->orders_max_created_at,

@@ -25,6 +25,8 @@ class StoreCustomerRequest extends FormRequest
             'nickname' => ['required', 'string', 'max:255', 'unique:customers,nickname'],
             'mobile' => ['nullable', 'string', 'max:20', 'unique:customers,mobile'],
             'address' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'notes' => ['nullable', 'string'],
             'delivery_fee' => ['nullable', 'numeric', 'min:0'],
         ];

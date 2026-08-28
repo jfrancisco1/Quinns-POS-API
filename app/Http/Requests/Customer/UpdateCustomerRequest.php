@@ -27,6 +27,8 @@ class UpdateCustomerRequest extends FormRequest
             'nickname' => ['sometimes', 'string', 'max:255', "unique:customers,nickname,{$customerId}"],
             'mobile' => ['sometimes', 'nullable', 'string', 'max:20', "unique:customers,mobile,{$customerId}"],
             'address' => ['sometimes', 'nullable', 'string'],
+            'latitude' => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'delivery_fee' => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ];
