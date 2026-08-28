@@ -40,6 +40,13 @@ class UserSeeder extends Seeder
                 'branch_name' => 'Main Branch',
             ],
             [
+                'name'        => 'Quinns Staff Main 2',
+                'username'    => 'quinns.main.staff2',
+                'password'    => 'staff20701',
+                'role'        => 'staff',
+                'branch_name' => 'Main Branch',
+            ],
+            [
                 'name'        => 'Quinns Delivery Main',
                 'username'    => 'quinns.delivery.main',
                 'password'    => 'delivery0701',
