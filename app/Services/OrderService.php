@@ -95,6 +95,16 @@ class OrderService extends BaseService
 
             $order = Order::updateOrCreate(['order_number' => $clientOrderNumber], $payload);
 
+            if ($order->wasRecentlyCreated && $order->payment_status !== 'unpaid') {
+                PaymentHistory::create([
+                    'order_number' => $order->order_number,
+                    'from_status'  => 'unpaid',
+                    'to_status'    => $order->payment_status,
+                    'changed_at'   => $order->created_at,
+                    'updated_by'   => Auth::id(),
+                ]);
+            }
+
             $this->syncItems($order, $data['items'] ?? []);
 
             return $order->load(['customer', 'items']);
