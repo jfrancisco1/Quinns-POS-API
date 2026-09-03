@@ -23,6 +23,7 @@ class SuperAdminUserService
         return $tenant->users()->create([
             ...$data,
             'password' => Hash::make($data['password']),
+            'must_change_password' => $data['role'] === 'admin',
         ]);
     }
 
@@ -30,15 +31,18 @@ class SuperAdminUserService
     {
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
+            $data['must_change_password'] = ($data['role'] ?? $user->role) === 'admin';
         }
 
         $user->update($data);
+
         return $user->fresh('branch:id,name');
     }
 
     public function toggleActive(User $user): User
     {
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
+
         return $user->fresh();
     }
 

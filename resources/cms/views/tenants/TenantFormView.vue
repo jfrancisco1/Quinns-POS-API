@@ -56,7 +56,7 @@ async function handleSubmit() {
       router.push(`/tenants/${route.params.id}`)
     } else {
       const { data } = await createTenant(form.value)
-      router.push(`/tenants/${data.data.id}`)
+      router.push(`/tenants/${data.data.id}/users/create?onboarding=1`)
     }
   } catch (e) {
     if (e.response?.status === 422) {

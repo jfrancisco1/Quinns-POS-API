@@ -300,6 +300,12 @@
                     <td class="desc">Get the authenticated user</td>
                     <td class="desc">Required</td>
                 </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/change-password</td>
+                    <td class="desc">Change the authenticated user's own password</td>
+                    <td class="desc">Required</td>
+                </tr>
             </tbody>
         </table>
 
@@ -323,13 +329,14 @@
   <span class="key">"username"</span>: <span class="str">"juan"</span>,
   <span class="key">"role"</span>: <span class="str">"admin"</span>,
   <span class="key">"tenant_id"</span>: <span class="num">1</span>,
-  <span class="key">"branch_id"</span>: <span class="null">null</span>
+  <span class="key">"branch_id"</span>: <span class="null">null</span>,
+  <span class="key">"must_change_password"</span>: <span class="bool">true</span>
 },
 <span class="key">"tenant"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
 }</div>
-        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant.</p>
+        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant. <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">must_change_password</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">true</code> for newly created owner-admin accounts and must be cleared via <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">POST /change-password</code> before continuing.</p>
 
         <div class="fields-title">GET /me Response</div>
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
@@ -338,6 +345,7 @@
 <span class="key">"role"</span>: <span class="str">"admin"</span>,
 <span class="key">"tenant_id"</span>: <span class="num">1</span>,
 <span class="key">"branch_id"</span>: <span class="null">null</span>,
+<span class="key">"must_change_password"</span>: <span class="bool">true</span>,
 <span class="key">"token_expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span>,
 <span class="key">"tenant"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
@@ -348,13 +356,28 @@
         <div class="fields-title">Using the Token</div>
         <div class="code-block">Authorization: Bearer 1|abc123...</div>
 
+        <div class="fields-title">Change Password Request</div>
+        <p class="desc" style="margin-bottom: 10px;">Changes the authenticated user's own password. New owner-admin accounts are created with <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">must_change_password</code> set to <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">true</code> and must call this endpoint before continuing to use the app. Station accounts (staff/delivery) are not affected.</p>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">current_password</td><td>string</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">new_password</td><td>string</td><td class="required">Yes</td><td>Min 8 characters</td></tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Change Password Response</div>
+        <div class="code-block"><span class="key">"message"</span>: <span class="str">"Password changed successfully."</span></div>
+
         <div class="fields-title">Error Responses</div>
         <table class="fields-table">
             <thead>
                 <tr><th>Status</th><th>Reason</th></tr>
             </thead>
             <tbody>
-                <tr><td>422</td><td>Invalid credentials</td></tr>
+                <tr><td>422</td><td>Invalid credentials (login) or incorrect current_password (change-password)</td></tr>
                 <tr><td>403</td><td>Account is inactive</td></tr>
                 <tr><td>401</td><td>Missing or invalid token on protected routes</td></tr>
             </tbody>

@@ -19,6 +19,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'must_change_password',
         'tenant_id',
         'branch_id',
     ];
@@ -31,6 +32,7 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'must_change_password' => 'boolean',
     ];
 
     public function branch(): BelongsTo

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getBranches, getUsers, createUser, updateUser } from '../../api'
+import { getTenant, getBranches, getUsers, createUser, updateUser } from '../../api'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,11 +9,14 @@ const router = useRouter()
 const tenantId = computed(() => route.params.tenantId)
 const userId = computed(() => route.params.userId)
 const isEdit = computed(() => !!userId.value)
+const isOnboarding = computed(() => route.query.onboarding === '1' && !isEdit.value)
 
 const loading = ref(false)
 const fetching = ref(false)
 const errors = ref({})
 const branches = ref([])
+const tenant = ref(null)
+const showPassword = ref(false)
 
 const form = ref({
     name: '',
@@ -27,11 +30,47 @@ const form = ref({
 // Admin users don't need a branch
 const needsBranch = computed(() => ['staff', 'delivery'].includes(form.value.role))
 
+function slugify(str) {
+    return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+function generatePassword(length = 8) {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    const bytes = new Uint32Array(length)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, (b) => chars[b % chars.length]).join('')
+}
+
+function regeneratePassword() {
+    form.value.password = generatePassword()
+    showPassword.value = true
+}
+
+// Owner-admin accounts are created by the operator on the tenant's behalf and are
+// forced to change their password on first login, so suggest credentials instead
+// of making the operator invent them. Passwords aren't recoverable once hashed —
+// if one is lost, generating a new one here (and forcing another change) is the
+// only way back in, both on create and later from the edit screen.
+function regenerateCredentials() {
+    const base = tenant.value?.slug || slugify(tenant.value?.name) || 'tenant'
+    form.value.username = `${base}.admin`
+    regeneratePassword()
+}
+
 watch(() => form.value.role, (role) => {
     if (role === 'admin') form.value.branch_id = null
+    if (!isEdit.value && role === 'admin' && !form.value.username && !form.value.password) {
+        regenerateCredentials()
+    }
 })
 
 onMounted(async () => {
+    if (!isEdit.value) {
+        const { data: tenantData } = await getTenant(tenantId.value)
+        tenant.value = tenantData.data
+        if (form.value.role === 'admin') regenerateCredentials()
+    }
+
     // Load branches for this tenant
     const { data } = await getBranches(tenantId.value)
     branches.value = data.data
@@ -90,7 +129,13 @@ async function handleSubmit() {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </RouterLink>
-            <h1 class="text-2xl font-bold text-gray-900">{{ isEdit ? 'Edit User' : 'New User' }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">{{ isOnboarding ? 'Create Owner-Admin' : isEdit ? 'Edit User' : 'New User' }}</h1>
+        </div>
+
+        <div v-if="isOnboarding" class="mb-6 bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 text-sm text-brand-800">
+            Step 2 of 2 — create the owner-admin account for
+            <strong>{{ tenant?.name || 'this tenant' }}</strong>.
+            They'll use it to log in and set up their own branches, items, and staff.
         </div>
 
         <div v-if="fetching" class="py-12 text-center text-sm text-gray-400">Loading...</div>
@@ -111,7 +156,17 @@ async function handleSubmit() {
 
             <!-- Username -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Username <span class="text-red-500">*</span></label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-sm font-medium text-gray-700">Username <span class="text-red-500">*</span></label>
+                    <button
+                        v-if="!isEdit && form.role === 'admin'"
+                        type="button"
+                        @click="regenerateCredentials"
+                        class="text-xs font-medium text-brand-600 hover:text-brand-700"
+                    >
+                        Suggest new
+                    </button>
+                </div>
                 <input
                     v-model="form.username"
                     type="text"
@@ -125,25 +180,57 @@ async function handleSubmit() {
 
             <!-- Password -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Password
-                    <span v-if="!isEdit" class="text-red-500">*</span>
-                    <span v-else class="text-gray-400 font-normal">(leave blank to keep current)</span>
-                </label>
-                <input
-                    v-model="form.password"
-                    type="password"
-                    :required="!isEdit"
-                    autocomplete="new-password"
-                    class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                    :class="errors.password ? 'border-red-400' : 'border-gray-300'"
-                    placeholder="Min. 8 characters"
-                />
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Password
+                        <span v-if="!isEdit" class="text-red-500">*</span>
+                        <span v-else class="text-gray-400 font-normal">(leave blank to keep current)</span>
+                    </label>
+                    <button
+                        v-if="form.role === 'admin'"
+                        type="button"
+                        @click="regeneratePassword"
+                        class="text-xs font-medium text-brand-600 hover:text-brand-700"
+                    >
+                        {{ isEdit ? 'Generate new password' : 'Suggest new' }}
+                    </button>
+                </div>
+                <div class="relative">
+                    <input
+                        v-model="form.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        :required="!isEdit"
+                        autocomplete="new-password"
+                        class="w-full px-3.5 py-2.5 pr-10 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                        :class="errors.password ? 'border-red-400' : 'border-gray-300'"
+                        placeholder="Min. 8 characters"
+                    />
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        :title="showPassword ? 'Hide password' : 'Show password'"
+                    >
+                        <svg v-if="showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                        </svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <p v-if="form.role === 'admin' && form.password" class="text-xs text-gray-500 mt-1">
+                    Share this with the owner-admin — they'll be required to set their own on next login.
+                </p>
+                <p v-else-if="isEdit && form.role === 'admin'" class="text-xs text-gray-400 mt-1">
+                    Password isn't recoverable once set. Lost it? Generate a new one above.
+                </p>
                 <p v-if="errors.password" class="text-xs text-red-500 mt-1">{{ errors.password[0] }}</p>
             </div>
 
-            <!-- Role -->
-            <div>
+            <!-- Role (locked to admin during onboarding) -->
+            <div v-if="!isOnboarding">
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Role <span class="text-red-500">*</span></label>
                 <div class="grid grid-cols-3 gap-2">
                     <label
@@ -161,7 +248,7 @@ async function handleSubmit() {
             </div>
 
             <!-- Branch (only for staff/delivery) -->
-            <div v-if="needsBranch">
+            <div v-if="!isOnboarding && needsBranch">
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                     Branch <span class="text-red-500">*</span>
                 </label>

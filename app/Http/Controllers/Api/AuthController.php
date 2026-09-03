@@ -44,6 +44,7 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'tenant_id' => $user->tenant_id,
                 'branch_id' => $user->branch_id,
+                'must_change_password' => $user->must_change_password,
             ],
             'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
@@ -72,11 +73,35 @@ class AuthController extends Controller
             'role' => $user->role,
             'tenant_id' => $user->tenant_id,
             'branch_id' => $user->branch_id,
+            'must_change_password' => $user->must_change_password,
             'token_expires_at' => $token->expires_at?->toDateTimeString(),
             'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
                 'name' => $user->tenant->name,
             ] : null,
         ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8'],
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided password is incorrect.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'must_change_password' => false,
+        ]);
+
+        return response()->json(['message' => 'Password changed successfully.']);
     }
 }
