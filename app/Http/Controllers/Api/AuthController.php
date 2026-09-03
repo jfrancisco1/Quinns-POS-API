@@ -32,6 +32,8 @@ class AuthController extends Controller
 
         $tokenResult = $user->createToken('api-token');
 
+        $user->loadMissing('tenant');
+
         return response()->json([
             'token'      => $tokenResult->plainTextToken,
             'expires_at' => $tokenResult->accessToken->expires_at?->toDateTimeString(),
@@ -42,6 +44,10 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'tenant_id' => $user->tenant_id,
                 'branch_id' => $user->branch_id,
+            ],
+            'tenant' => [
+                'id' => $user->tenant->id,
+                'name' => $user->tenant->name,
             ],
         ]);
     }
@@ -57,6 +63,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $token = $user->currentAccessToken();
+        $user->loadMissing('tenant');
 
         return response()->json([
             'id' => $user->id,
@@ -66,6 +73,10 @@ class AuthController extends Controller
             'tenant_id' => $user->tenant_id,
             'branch_id' => $user->branch_id,
             'token_expires_at' => $token->expires_at?->toDateTimeString(),
+            'tenant' => [
+                'id' => $user->tenant->id,
+                'name' => $user->tenant->name,
+            ],
         ]);
     }
 }

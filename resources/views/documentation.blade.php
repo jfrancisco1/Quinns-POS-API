@@ -324,6 +324,10 @@
   <span class="key">"role"</span>: <span class="str">"admin"</span>,
   <span class="key">"tenant_id"</span>: <span class="num">1</span>,
   <span class="key">"branch_id"</span>: <span class="null">null</span>
+},
+<span class="key">"tenant"</span>: {
+  <span class="key">"id"</span>: <span class="num">1</span>,
+  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
 }</div>
 
         <div class="fields-title">GET /me Response</div>
@@ -333,7 +337,11 @@
 <span class="key">"role"</span>: <span class="str">"admin"</span>,
 <span class="key">"tenant_id"</span>: <span class="num">1</span>,
 <span class="key">"branch_id"</span>: <span class="null">null</span>,
-<span class="key">"token_expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span></div>
+<span class="key">"token_expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span>,
+<span class="key">"tenant"</span>: {
+  <span class="key">"id"</span>: <span class="num">1</span>,
+  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
+}</div>
 
         <div class="fields-title">Using the Token</div>
         <div class="code-block">Authorization: Bearer 1|abc123...</div>
