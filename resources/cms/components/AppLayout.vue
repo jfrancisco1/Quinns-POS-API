@@ -17,7 +17,7 @@ async function handleLogout() {
     <aside class="w-60 bg-brand-800 text-white flex flex-col shrink-0">
       <div class="px-6 py-5 border-b border-brand-700">
         <span class="text-lg font-bold tracking-wide">Quinns - Laundry POS</span>
-        <span class="block text-xs text-brand-300 mt-0.5">Owner CMS</span>
+        <span class="block text-xs text-brand-300 mt-0.5">Superadmin CMS</span>
       </div>
 
       <nav class="flex-1 px-3 py-4 space-y-1">

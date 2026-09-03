@@ -19,7 +19,7 @@ routes/api.php → Controller → Service → Model → Database
 ```
 
 - **Controllers** — thin. Accept a Request, call the Service, return a Resource or JsonResponse. No business logic.
-- **Services** — all business logic lives here. Extend `BaseService` for tenant-scoped resources; owner services do NOT extend it.
+- **Services** — all business logic lives here. Extend `BaseService` for tenant-scoped resources; superadmin services do NOT extend it.
 - **Models** — relationships, casts, and `resolveRouteBinding()` for tenancy enforcement. No business logic.
 - **Form Requests** — validation and authorization always in a dedicated `App\Http\Requests\{Resource}\Store{Resource}Request` / `Update{Resource}Request`.
 - **Resources** — transform model output via `App\Http\Resources\{Resource}Resource`.
@@ -28,21 +28,21 @@ routes/api.php → Controller → Service → Model → Database
 
 ## Multi-Tenancy
 
-Every non-owner resource **must** carry `tenant_id` and (where applicable) `branch_id`.
+Every non-superadmin resource **must** carry `tenant_id` and (where applicable) `branch_id`.
 
 - Use `tenantScope()` from `BaseService` for all list queries — never write a raw `where('tenant_id', ...)` in a controller.
 - Call `authorizeTenant($model)` in service methods before mutating or returning a single record.
 - Route model binding (`resolveRouteBinding()`) enforces tenancy at the model level.
-- Owner routes (`/api/v1/owner/*`) are exempt from tenant scoping.
+- Superadmin routes (`/api/v1/superadmin/*`) are exempt from tenant scoping.
 
 Role access matrix:
 
-| Role       | Scope                          |
-|------------|-------------------------------|
-| `owner`    | All tenants (owner routes only)|
-| `admin`    | All branches within their tenant |
-| `staff`    | Their branch only              |
-| `delivery` | Their branch only              |
+| Role         | Scope                              |
+|--------------|------------------------------------|
+| `superadmin` | All tenants (superadmin routes only)|
+| `admin`      | All branches within their tenant   |
+| `staff`      | Their branch only                  |
+| `delivery`   | Their branch only                  |
 
 ---
 
@@ -143,7 +143,7 @@ class FooService extends BaseService
 - All routes are under the `/api/v1` prefix.
 - Use `apiResource` for standard CRUD. Add extra actions as explicit routes below the resource.
 - Authenticated routes go inside `Route::middleware('auth:sanctum')->group(...)`.
-- Owner routes go inside `Route::middleware(['auth:sanctum', 'owner'])->prefix('owner')->group(...)`.
+- Superadmin routes go inside `Route::middleware(['auth:sanctum', 'superadmin'])->prefix('superadmin')->group(...)`.
 
 ```php
 // Standard resource

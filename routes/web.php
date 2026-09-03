@@ -17,10 +17,10 @@ Route::get('/docs', function () {
     return view('documentation');
 });
 
-// Owner CMS — catch-all so Vue Router handles navigation
+// Superadmin CMS — catch-all so Vue Router handles navigation
 Route::get('/cms/{any?}', function () {
     return view('cms');
 })->where('any', '.*');
 
 // Admin Panel — catch-all so Vue Router handles navigation
-Route::get('/admin/{any?}', fn() => view('admin'))->where('any', '.*');
+Route::get('/admin/{any?}', fn () => view('admin'))->where('any', '.*');

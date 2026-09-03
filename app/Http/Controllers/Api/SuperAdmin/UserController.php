@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Owner;
+namespace App\Http\Controllers\Api\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
@@ -8,13 +8,13 @@ use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\OwnerUserService;
+use App\Services\SuperAdminUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UserController extends Controller
 {
-    public function __construct(private readonly OwnerUserService $userService) {}
+    public function __construct(private readonly SuperAdminUserService $userService) {}
 
     public function index(Tenant $tenant): AnonymousResourceCollection
     {

@@ -20,13 +20,13 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'username' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             return response()->json(['message' => 'Account is inactive.'], 403);
         }
 
@@ -35,7 +35,7 @@ class AuthController extends Controller
         $user->loadMissing('tenant');
 
         return response()->json([
-            'token'      => $tokenResult->plainTextToken,
+            'token' => $tokenResult->plainTextToken,
             'expires_at' => $tokenResult->accessToken->expires_at?->toDateTimeString(),
             'user' => [
                 'id' => $user->id,
@@ -45,10 +45,10 @@ class AuthController extends Controller
                 'tenant_id' => $user->tenant_id,
                 'branch_id' => $user->branch_id,
             ],
-            'tenant' => [
+            'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
                 'name' => $user->tenant->name,
-            ],
+            ] : null,
         ]);
     }
 
@@ -73,10 +73,10 @@ class AuthController extends Controller
             'tenant_id' => $user->tenant_id,
             'branch_id' => $user->branch_id,
             'token_expires_at' => $token->expires_at?->toDateTimeString(),
-            'tenant' => [
+            'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
                 'name' => $user->tenant->name,
-            ],
+            ] : null,
         ]);
     }
 }

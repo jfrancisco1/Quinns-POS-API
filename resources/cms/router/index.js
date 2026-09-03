@@ -68,7 +68,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-    const token = localStorage.getItem('owner_token')
+    const token = localStorage.getItem('superadmin_token')
     if (to.meta.requiresAuth && !token) return { name: 'Login' }
     if (to.meta.guest && token) return { name: 'Dashboard' }
 })

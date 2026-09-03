@@ -3,22 +3,22 @@ import { ref, computed } from 'vue'
 import { login as apiLogin, logout as apiLogout } from '../api'
 
 export const useAuthStore = defineStore('auth', () => {
-    const token = ref(localStorage.getItem('owner_token') || null)
-    const user = ref(JSON.parse(localStorage.getItem('owner_user') || 'null'))
+    const token = ref(localStorage.getItem('superadmin_token') || null)
+    const user = ref(JSON.parse(localStorage.getItem('superadmin_user') || 'null'))
 
     const isAuthenticated = computed(() => !!token.value)
 
     async function login(credentials) {
         const { data } = await apiLogin(credentials)
 
-        if (data.user?.role !== 'owner') {
-            throw new Error('Access denied. Owner account required.')
+        if (data.user?.role !== 'superadmin') {
+            throw new Error('Access denied. Superadmin account required.')
         }
 
         token.value = data.token
         user.value = data.user
-        localStorage.setItem('owner_token', data.token)
-        localStorage.setItem('owner_user', JSON.stringify(data.user))
+        localStorage.setItem('superadmin_token', data.token)
+        localStorage.setItem('superadmin_user', JSON.stringify(data.user))
     }
 
     async function logout() {
@@ -27,8 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
         } finally {
             token.value = null
             user.value = null
-            localStorage.removeItem('owner_token')
-            localStorage.removeItem('owner_user')
+            localStorage.removeItem('superadmin_token')
+            localStorage.removeItem('superadmin_user')
         }
     }
 

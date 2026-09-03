@@ -329,6 +329,7 @@
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
 }</div>
+        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant.</p>
 
         <div class="fields-title">GET /me Response</div>
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
@@ -342,6 +343,7 @@
   <span class="key">"id"</span>: <span class="num">1</span>,
   <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
 }</div>
+        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant.</p>
 
         <div class="fields-title">Using the Token</div>
         <div class="code-block">Authorization: Bearer 1|abc123...</div>

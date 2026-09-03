@@ -7,13 +7,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 
-class OwnerUserService
+class SuperAdminUserService
 {
     public function getAllForTenant(Tenant $tenant): Collection
     {
         return $tenant->users()
             ->with('branch:id,name')
-            ->where('role', '!=', 'owner')
+            ->where('role', '!=', 'superadmin')
             ->latest()
             ->get();
     }
