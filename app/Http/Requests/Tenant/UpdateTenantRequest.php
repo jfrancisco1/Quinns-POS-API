@@ -25,6 +25,7 @@ class UpdateTenantRequest extends FormRequest
             'gcash_number' => ['nullable', 'string', 'max:20'],
             'plan'      => ['sometimes', 'in:free,basic,pro'],
             'is_active' => ['sometimes', 'boolean'],
+            'trial_ends_at' => ['sometimes', 'nullable', 'date'],
         ];
     }
 }

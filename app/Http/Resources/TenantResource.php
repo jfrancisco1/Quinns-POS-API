@@ -19,6 +19,7 @@ class TenantResource extends JsonResource
             'gcash_number'  => $this->gcash_number,
             'plan'          => $this->plan,
             'is_active'     => $this->is_active,
+            'trial_ends_at' => $this->trial_ends_at,
             'branches_count' => $this->whenCounted('branches'),
             'users_count'   => $this->whenCounted('users'),
             'branches'      => BranchResource::collection($this->whenLoaded('branches')),

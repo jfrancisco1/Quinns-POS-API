@@ -19,11 +19,20 @@ class Tenant extends Model
         'gcash_number',
         'plan',
         'is_active',
+        'trial_ends_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'trial_ends_at' => 'datetime',
     ];
+
+    public function isTrialExpired(): bool
+    {
+        return $this->plan === 'free'
+            && $this->trial_ends_at !== null
+            && $this->trial_ends_at->isPast();
+    }
 
     public function branches(): HasMany
     {

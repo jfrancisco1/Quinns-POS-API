@@ -233,6 +233,7 @@
 <nav class="sidebar">
     <div class="sidebar-title">Quinn's Laundry</div>
     <a href="#overview">Overview</a>
+    <a href="#registration">Registration</a>
     <a href="#auth">Authentication</a>
     <a href="#store">Store</a>
     <a href="#branches">Branches</a>
@@ -260,6 +261,68 @@
             <span class="badge badge-422">422 Validation Error</span>
             <span class="badge badge-500">500 Server Error</span>
         </div>
+    </section>
+
+    <hr class="divider">
+
+    {{-- Registration --}}
+    <section id="registration">
+        <div class="section-title">Registration</div>
+
+        <p class="desc" style="margin-bottom: 20px;">
+            Lets a new business owner sign up directly: a tenant and an owner-admin account are created automatically, and login credentials are emailed to the business's email address (never returned in the response).
+        </p>
+
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Auth</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/register</td>
+                    <td class="desc">Register a new business and its owner-admin account</td>
+                    <td class="desc">Public</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fields-title">Register Request</div>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">business_name</td><td>string</td><td class="required">Yes</td><td></td></tr>
+                <tr><td class="field-name">email</td><td>string</td><td class="required">Yes</td><td>Must be unique. Used as the tenant's contact email and where the welcome email is sent.</td></tr>
+                <tr><td class="field-name">phone</td><td>string</td><td>No</td><td>Must be unique if provided</td></tr>
+                <tr><td class="field-name">address</td><td>string</td><td>No</td><td></td></tr>
+                <tr><td class="field-name">owner_name</td><td>string</td><td class="required">Yes</td><td>Name of the owner-admin account</td></tr>
+            </tbody>
+        </table>
+        <p class="desc" style="margin-bottom: 10px;">The tenant's <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">slug</code>, the admin account's <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">username</code>, and its temporary password are all generated automatically. The tenant starts on the <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">free</code> plan with a 30-day trial.</p>
+
+        <div class="fields-title">Register Response</div>
+        <div class="code-block"><span class="key">"data"</span>: {
+  <span class="key">"id"</span>: <span class="num">5</span>,
+  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>,
+  <span class="key">"slug"</span>: <span class="str">"quinns-laundry"</span>,
+  <span class="key">"email"</span>: <span class="str">"owner@quinnslaundry.com"</span>,
+  <span class="key">"phone"</span>: <span class="null">null</span>,
+  <span class="key">"address"</span>: <span class="null">null</span>,
+  <span class="key">"gcash_number"</span>: <span class="null">null</span>,
+  <span class="key">"plan"</span>: <span class="str">"free"</span>,
+  <span class="key">"is_active"</span>: <span class="bool">true</span>,
+  <span class="key">"trial_ends_at"</span>: <span class="str">"2026-10-04 00:00:00"</span>,
+  <span class="key">"created_at"</span>: <span class="str">"2026-09-04 00:00:00"</span>,
+  <span class="key">"updated_at"</span>: <span class="str">"2026-09-04 00:00:00"</span>
+}</div>
+        <p class="desc" style="margin-top: 6px;">Login credentials (username and temporary password) are sent to <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">email</code> and are not included in this response. The account has <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">must_change_password</code> set to <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">true</code>, so log in with <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">POST /login</code> and change the password before continuing.</p>
     </section>
 
     <hr class="divider">
@@ -334,9 +397,11 @@
 },
 <span class="key">"tenant"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
-  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
+  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>,
+  <span class="key">"plan"</span>: <span class="str">"free"</span>,
+  <span class="key">"trial_ends_at"</span>: <span class="str">"2026-10-04 00:00:00"</span>
 }</div>
-        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant. <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">must_change_password</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">true</code> for newly created owner-admin accounts and must be cleared via <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">POST /change-password</code> before continuing.</p>
+        <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant. <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">must_change_password</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">true</code> for newly created owner-admin accounts and must be cleared via <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">POST /change-password</code> before continuing. <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">trial_ends_at</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for tenants not on the <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">free</code> plan. Login is rejected with 403 once a <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">free</code>-plan tenant's trial has passed <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">trial_ends_at</code>.</p>
 
         <div class="fields-title">GET /me Response</div>
         <div class="code-block"><span class="key">"id"</span>: <span class="num">1</span>,
@@ -349,7 +414,9 @@
 <span class="key">"token_expires_at"</span>: <span class="str">"2026-04-17 12:00:00"</span>,
 <span class="key">"tenant"</span>: {
   <span class="key">"id"</span>: <span class="num">1</span>,
-  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>
+  <span class="key">"name"</span>: <span class="str">"Quinn's Laundry"</span>,
+  <span class="key">"plan"</span>: <span class="str">"free"</span>,
+  <span class="key">"trial_ends_at"</span>: <span class="str">"2026-10-04 00:00:00"</span>
 }</div>
         <p class="desc" style="margin-top: 6px;"><code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">tenant</code> is <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">null</code> for <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">superadmin</code> accounts, which don't belong to a tenant.</p>
 
@@ -379,6 +446,8 @@
             <tbody>
                 <tr><td>422</td><td>Invalid credentials (login) or incorrect current_password (change-password)</td></tr>
                 <tr><td>403</td><td>Account is inactive</td></tr>
+                <tr><td>403</td><td>Tenant account is inactive</td></tr>
+                <tr><td>403</td><td>Tenant's free trial has ended</td></tr>
                 <tr><td>401</td><td>Missing or invalid token on protected routes</td></tr>
             </tbody>
         </table>

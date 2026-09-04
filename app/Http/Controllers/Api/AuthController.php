@@ -30,9 +30,19 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account is inactive.'], 403);
         }
 
-        $tokenResult = $user->createToken('api-token');
-
         $user->loadMissing('tenant');
+
+        if ($user->role !== 'superadmin') {
+            if (! $user->tenant || ! $user->tenant->is_active) {
+                return response()->json(['message' => 'Tenant account is inactive.'], 403);
+            }
+
+            if ($user->tenant->isTrialExpired()) {
+                return response()->json(['message' => 'Your free trial has ended. Please upgrade your plan to continue.'], 403);
+            }
+        }
+
+        $tokenResult = $user->createToken('api-token');
 
         return response()->json([
             'token' => $tokenResult->plainTextToken,
@@ -49,6 +59,8 @@ class AuthController extends Controller
             'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
                 'name' => $user->tenant->name,
+                'plan' => $user->tenant->plan,
+                'trial_ends_at' => $user->tenant->trial_ends_at?->toDateTimeString(),
             ] : null,
         ]);
     }
@@ -78,6 +90,8 @@ class AuthController extends Controller
             'tenant' => $user->tenant ? [
                 'id' => $user->tenant->id,
                 'name' => $user->tenant->name,
+                'plan' => $user->tenant->plan,
+                'trial_ends_at' => $user->tenant->trial_ends_at?->toDateTimeString(),
             ] : null,
         ]);
     }

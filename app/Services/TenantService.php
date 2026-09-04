@@ -25,10 +25,14 @@ class TenantService
 
     public function create(array $data): Tenant
     {
+        if (($data['plan'] ?? null) === 'free') {
+            $data['trial_ends_at'] = now()->addDays(30);
+        }
+
         $tenant = Tenant::create($data);
         $this->expenseCategoryService->seedDefaults($tenant->id);
 
-        return $tenant;
+        return $tenant->fresh();
     }
 
     public function update(Tenant $tenant, array $data): Tenant

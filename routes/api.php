@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\SuperAdmin\BranchController as SuperAdminBranchController;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [RegistrationController::class, 'store'])->middleware('throttle:5,1');
 
     // Superadmin CMS routes
     Route::middleware(['auth:sanctum', 'superadmin'])->prefix('superadmin')->group(function () {
@@ -29,7 +31,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('tenants/{tenant}/users/{user}/toggle', [SuperAdminUserController::class, 'toggle']);
     });
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.active'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
