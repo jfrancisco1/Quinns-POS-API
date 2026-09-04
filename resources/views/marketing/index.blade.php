@@ -5,16 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quinn's POS — Point of Sale for Laundry Businesses</title>
     <meta name="description" content="Run your laundry business on one system: orders, branches, customers, expenses, and reports. Start free for 30 days, no card required.">
+    <link rel="canonical" href="{{ url('/') }}">
+    <meta name="theme-color" content="#0284c7">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Quinn's POS">
+    <meta property="og:title" content="Quinn's POS — Point of Sale for Laundry Businesses">
+    <meta property="og:description" content="Run your laundry business on one system: orders, branches, customers, expenses, and reports. Start free for 30 days, no card required.">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quinn's POS — Point of Sale for Laundry Businesses">
+    <meta name="twitter:description" content="Run your laundry business on one system: orders, branches, customers, expenses, and reports. Start free for 30 days, no card required.">
+    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon-180.png') }}">
+
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        'name' => "Quinn's POS",
+        'description' => 'Point-of-sale software built for laundry businesses: orders, branches, customers, expenses, and sales reports in one system.',
+        'applicationCategory' => 'BusinessApplication',
+        'operatingSystem' => 'Web',
+        'url' => url('/'),
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => '0',
+            'priceCurrency' => 'PHP',
+            'description' => '30-day free trial, no credit card required',
+        ],
+    ], JSON_UNESCAPED_SLASHES) !!}
+    </script>
+
     <style>
 @include('marketing.styles')
     </style>
+    @if (config('services.recaptcha.site_key'))
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+    @endif
 </head>
 <body>
 
 <header>
     <nav class="wrap">
         <a href="/" class="logo">
-            <span class="logo-mark"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt=""></span>
+            <span class="logo-mark"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt="Quinn's POS"></span>
             Quinn's POS
         </a>
         <div class="nav-links">
@@ -268,7 +312,7 @@
         <div class="footer-top">
             <div class="footer-brand">
                 <a href="/" class="logo">
-                    <span class="logo-mark"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt=""></span>
+                    <span class="logo-mark"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt="Quinn's POS"></span>
                     Quinn's POS
                 </a>
                 <p>Point-of-sale software built for laundry businesses — orders, branches, customers, and reports in one place.</p>

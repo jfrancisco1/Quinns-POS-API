@@ -1,6 +1,7 @@
 const form = document.getElementById('register-form');
 const submitBtn = document.getElementById('submit-btn');
 const message = document.getElementById('form-message');
+const recaptchaSiteKey = @json(config('services.recaptcha.site_key'));
 
 function clearErrors() {
     form.querySelectorAll('.field').forEach((field) => {
@@ -9,6 +10,18 @@ function clearErrors() {
     });
     message.className = 'form-message';
     message.textContent = '';
+}
+
+function getRecaptchaToken() {
+    if (!recaptchaSiteKey || typeof grecaptcha === 'undefined') {
+        return Promise.resolve(null);
+    }
+
+    return new Promise((resolve) => {
+        grecaptcha.ready(() => {
+            grecaptcha.execute(recaptchaSiteKey, { action: 'register' }).then(resolve);
+        });
+    });
 }
 
 form.addEventListener('submit', async (e) => {
@@ -21,6 +34,11 @@ form.addEventListener('submit', async (e) => {
     Object.keys(payload).forEach((key) => {
         if (payload[key] === '') delete payload[key];
     });
+
+    const recaptchaToken = await getRecaptchaToken();
+    if (recaptchaToken) {
+        payload['g-recaptcha-response'] = recaptchaToken;
+    }
 
     try {
         const response = await fetch('/api/v1/register', {

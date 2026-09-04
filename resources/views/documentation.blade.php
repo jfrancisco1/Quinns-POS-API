@@ -303,6 +303,7 @@
                 <tr><td class="field-name">phone</td><td>string</td><td>No</td><td>Must be unique if provided</td></tr>
                 <tr><td class="field-name">address</td><td>string</td><td>No</td><td></td></tr>
                 <tr><td class="field-name">owner_name</td><td>string</td><td class="required">Yes</td><td>Name of the owner-admin account</td></tr>
+                <tr><td class="field-name">g-recaptcha-response</td><td>string</td><td>Conditional</td><td>A reCAPTCHA v3 token for the <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">register</code> action. Required only when <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">RECAPTCHA_SECRET_KEY</code> is configured server-side.</td></tr>
             </tbody>
         </table>
         <p class="desc" style="margin-bottom: 10px;">The tenant's <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">slug</code>, the admin account's <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">username</code>, and its temporary password are all generated automatically. The tenant starts on the <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">free</code> plan with a 30-day trial.</p>
