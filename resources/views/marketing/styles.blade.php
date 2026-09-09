@@ -2,9 +2,9 @@
     --ink: #0b1220;
     --muted: #5b6472;
     --muted-2: #8a93a3;
-    --primary: #0284c7;
-    --primary-dark: #026aa2;
-    --primary-tint: #e6f4fc;
+    --primary: #111111;
+    --primary-dark: #000000;
+    --primary-tint: #eeeeee;
     --green: #16a34a;
     --green-tint: #e8f7ec;
     --border: #e3e9ef;
@@ -78,7 +78,7 @@ nav.wrap {
     width: 28px;
     height: 28px;
     border-radius: 8px;
-    background: var(--primary);
+    background: #111111;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -268,13 +268,21 @@ h1 {
     width: 168px;
     height: 300px;
     bottom: 0;
-    right: 10px;
+    right: 90px;
     border-radius: 32px;
     padding: 10px 8px;
     transform: rotate(4deg);
     animation: float-b 6s ease-in-out infinite;
     animation-delay: -2.4s;
     z-index: 2;
+}
+
+.device-phone-2 {
+    right: 0;
+    bottom: -10px;
+    transform: rotate(9deg);
+    z-index: 3;
+    animation-delay: -4s;
 }
 
 .device-notch {
@@ -301,6 +309,16 @@ h1 {
 }
 
 .device-phone .device-screen { padding-top: 20px; }
+
+.device-screen.device-screenshot { padding: 0; }
+.device-screen.device-screenshot img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    background: #ffffff;
+}
 
 .screen-topbar {
     display: flex;
@@ -395,7 +413,7 @@ h1 {
 }
 
 .chip-green { background: var(--green-tint); color: var(--green); }
-.chip-blue { background: var(--primary-tint); color: var(--primary-dark); }
+.chip-blue { background: #e6f4fc; color: #026aa2; }
 .chip-gray { background: #e9edf1; color: var(--muted); }
 
 @keyframes float-a {
@@ -728,7 +746,7 @@ footer {
 @media (max-width: 860px) {
     .hero-grid { grid-template-columns: 1fr; }
     .device-stack { height: 300px; margin-top: 24px; transform: scale(.85); transform-origin: top center; }
-    .features-grid, .roles-strip { grid-template-columns: 1fr; }
+    .features-grid, .roles-strip, .screenshots-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
     section { padding: 56px 0; }
     .cta-band { padding: 64px 0; }

@@ -6,7 +6,7 @@
     <title>Quinn's POS — Point of Sale for Laundry Businesses</title>
     <meta name="description" content="Run your laundry business on one system: orders, branches, customers, expenses, and reports. Start free for 30 days, no card required.">
     <link rel="canonical" href="{{ url('/') }}">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="theme-color" content="#111111">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
@@ -86,43 +86,17 @@
             </div>
             <div class="device-stack">
                 <div class="device device-tablet">
-                    <div class="device-screen">
-                        <div class="screen-topbar">
-                            <span class="screen-logo"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt=""></span>
-                            <span class="screen-topbar-title">Admin · Dashboard</span>
-                        </div>
-                        <div class="screen-stats">
-                            <div class="screen-stat">
-                                <span class="screen-stat-label">Today's Orders</span>
-                                <span class="screen-stat-value">24</span>
-                            </div>
-                            <div class="screen-stat">
-                                <span class="screen-stat-label">Revenue</span>
-                                <span class="screen-stat-value">₱12,450</span>
-                            </div>
-                            <div class="screen-stat">
-                                <span class="screen-stat-label">Branches</span>
-                                <span class="screen-stat-value">3</span>
-                            </div>
-                        </div>
-                        <div class="screen-list">
-                            <div class="screen-row">
-                                <span class="screen-row-bar"></span>
-                                <span class="screen-chip chip-green">Ready</span>
-                            </div>
-                            <div class="screen-row">
-                                <span class="screen-row-bar"></span>
-                                <span class="screen-chip chip-blue">Washing</span>
-                            </div>
-                            <div class="screen-row">
-                                <span class="screen-row-bar"></span>
-                                <span class="screen-chip chip-gray">Picked up</span>
-                            </div>
-                        </div>
+                    <div class="device-screen device-screenshot">
+                        <img src="{{ asset('images/staff-app-dashboard.jpg') }}" alt="Quinn's POS staff app dashboard">
                     </div>
                 </div>
                 <div class="device device-phone">
                     <div class="device-notch"></div>
+                    <div class="device-screen device-screenshot">
+                        <img src="{{ asset('images/admin-app-expenses.jpg') }}" alt="Quinn's POS admin app expenses view">
+                    </div>
+                </div>
+                <div class="device device-phone device-phone-2">
                     <div class="device-screen">
                         <div class="screen-topbar">
                             <span class="screen-logo driver"><img src="{{ asset('images/quinns-logo-white-40.png') }}" alt=""></span>
@@ -224,14 +198,14 @@
             </div>
             <div class="roles-strip">
                 <div class="role-card">
-                    <div class="app-icon admin role-icon"><img src="{{ asset('images/quinns-logo-white-64.png') }}" alt=""></div>
-                    <span class="role-tag">Admin</span>
-                    <p>Full visibility across every branch — orders, reports, and account settings.</p>
-                </div>
-                <div class="role-card">
                     <div class="app-icon staff role-icon"><img src="{{ asset('images/quinns-logo-white-64.png') }}" alt=""></div>
                     <span class="role-tag">Staff</span>
                     <p>Take and manage orders at their branch, without the distraction of admin tools.</p>
+                </div>
+                <div class="role-card">
+                    <div class="app-icon admin role-icon"><img src="{{ asset('images/quinns-logo-white-64.png') }}" alt=""></div>
+                    <span class="role-tag">Admin</span>
+                    <p>Full visibility across every branch — orders, reports, and account settings.</p>
                 </div>
                 <div class="role-card">
                     <div class="app-icon driver role-icon"><img src="{{ asset('images/quinns-logo-white-64.png') }}" alt=""></div>
