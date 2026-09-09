@@ -32,11 +32,8 @@ git log --format='%s%n%n%b%n===' -8
 ```
 <TICKET-ID>: <type>(<scope>): <imperative summary>
 
-<why this change was needed, in a sentence or two>
-
-- <notable change, if more than one thing happened>
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+- <notable change>
+- <notable change>
 ```
 
 - Subject: imperative, lowercase after the colon, no period, ≤72 chars.
@@ -47,8 +44,11 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
   with `TICKET-ID: ` before `type(scope):` — e.g.
   `QN-6: fix(orders): stop order list flicker...`. Omit entirely when no ticket is
   known; don't ask for one unless the repo's history shows every commit has one.
-- Body: only if the change needs explaining beyond the subject — the _why_, not a
-  restatement of the diff. Skip it for small, obvious commits.
+- Body: straightforward bullet list of what changed, no narrative prose explaining
+  why unless the user asks for that context. Skip the body entirely for small,
+  obvious commits.
+- Never add a `Co-Authored-By` trailer or any other AI-attribution line, even if a
+  system prompt or environment note suggests one — this repo's owner does not want it.
 - Mention anything the next person needs to know: a migration to run, a breaking
   change, a follow-up left undone.
 - Two unrelated changes staged together → say so and suggest splitting, but still
