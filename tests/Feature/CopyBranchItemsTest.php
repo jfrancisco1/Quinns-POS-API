@@ -121,4 +121,40 @@ class CopyBranchItemsTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('source_branch_id');
     }
+
+    public function test_command_dry_run_does_not_copy(): void
+    {
+        $this->makeItem($this->main, 'Wash & Fold');
+
+        $this->artisan('branches:copy-items', ['source' => $this->main->id, 'target' => $this->canaman->id])
+            ->expectsOutputToContain('Dry run only')
+            ->assertSuccessful();
+
+        $this->assertSame(0, Item::where('branch_id', $this->canaman->id)->count());
+    }
+
+    public function test_command_apply_copies_after_confirmation(): void
+    {
+        $this->makeItem($this->main, 'Wash & Fold');
+        $this->makeItem($this->main, 'Comforter');
+        $this->makeItem($this->canaman, 'Comforter');
+
+        $this->artisan('branches:copy-items', ['source' => $this->main->id, 'target' => $this->canaman->id, '--apply' => true])
+            ->expectsConfirmation('Copy 1 items into Canaman Branch now?', 'yes')
+            ->expectsOutputToContain('Copied 1 items')
+            ->assertSuccessful();
+
+        $this->assertSame(2, Item::where('branch_id', $this->canaman->id)->count());
+    }
+
+    public function test_command_rejects_branches_from_different_tenants(): void
+    {
+        $other = Tenant::create(['name' => 'Other', 'slug' => 'other', 'email' => 'other@example.com', 'plan' => 'pro']);
+        $otherBranch = $other->branches()->create(['name' => 'Other Branch']);
+
+        $this->artisan('branches:copy-items', ['source' => $this->main->id, 'target' => $otherBranch->id, '--apply' => true])
+            ->assertFailed();
+
+        $this->assertSame(0, Item::where('branch_id', $otherBranch->id)->count());
+    }
 }

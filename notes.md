@@ -33,3 +33,26 @@ php artisan customers:backfill-coordinates --apply
 ```
 
 Run in Railway's interactive **Console** tab (or `railway run ...`) so the confirm prompt works.
+
+## Copy items to a new branch (Railway)
+
+Command: `branches:copy-items {source} {target}`
+
+Copies every item from the source branch into the target branch (same tenant only). Items whose name already exists in the target are skipped, so it's safe to re-run. Categories and expense categories are tenant-wide, so they don't need copying. Same logic as `POST /api/v1/branches/{id}/copy-items`.
+
+Find branch IDs:
+```bash
+php artisan tinker --execute="dump(App\Models\Branch::select('id','tenant_id','name')->get()->toArray());"
+```
+
+Dry run:
+```bash
+php artisan branches:copy-items 1 2
+```
+
+Apply (confirm prompt, writes rows):
+```bash
+php artisan branches:copy-items 1 2 --apply
+```
+
+Run in Railway's interactive **Console** tab (or `railway run ...`) so the confirm prompt works.
