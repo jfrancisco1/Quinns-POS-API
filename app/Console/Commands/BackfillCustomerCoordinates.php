@@ -10,14 +10,18 @@ class BackfillCustomerCoordinates extends Command
 {
     protected $signature = 'customers:backfill-coordinates {--apply : Actually write the changes (default is a dry run)}';
 
-    protected $description = 'Move [geo:lat, lng] tags from customer notes into the latitude/longitude columns and remove them from notes';
+    protected $description = 'Move [geo:lat, lng] tags from customer notes into the latitude/longitude columns, and remove geo and [maps:url] tags from notes';
+
+    private const MAPS_TAG = '\[maps:[^\]]*\]';
 
     private const GEO_TAG = '\[geo:\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*\]';
 
     public function handle(): int
     {
         $candidates = Customer::withTrashed()
-            ->whereRaw('LOWER(notes) LIKE ?', ['%geo:%'])
+            ->where(fn ($query) => $query
+                ->whereRaw('LOWER(notes) LIKE ?', ['%geo:%'])
+                ->orWhereRaw('LOWER(notes) LIKE ?', ['%maps:%']))
             ->get(['id', 'nickname', 'notes', 'latitude', 'longitude']);
 
         $changes = [];
@@ -25,7 +29,8 @@ class BackfillCustomerCoordinates extends Command
 
         foreach ($candidates as $customer) {
             $hasCoordinates = $customer->latitude !== null && $customer->longitude !== null;
-            $coordinates = $hasCoordinates ? [] : $this->parseCoordinates($customer->notes);
+            $hasGeoTag = stripos($customer->notes, 'geo:') !== false;
+            $coordinates = $hasCoordinates || ! $hasGeoTag ? [] : $this->parseCoordinates($customer->notes);
 
             if ($coordinates === null) {
                 $skipped[] = [$customer->id, $customer->nickname, $customer->notes];
@@ -33,7 +38,7 @@ class BackfillCustomerCoordinates extends Command
                 continue;
             }
 
-            $notes = $this->stripGeoTags($customer->notes);
+            $notes = $this->stripLocationTags($customer->notes);
 
             if ($coordinates === [] && $notes === $customer->notes) {
                 continue;
@@ -108,8 +113,8 @@ class BackfillCustomerCoordinates extends Command
         return ['latitude' => $latitude, 'longitude' => $longitude];
     }
 
-    private function stripGeoTags(string $notes): string
+    private function stripLocationTags(string $notes): string
     {
-        return trim(preg_replace(['/\s*'.self::GEO_TAG.'/i', '/[ \t]{2,}/'], ['', ' '], $notes));
+        return trim(preg_replace(['/\s*'.self::GEO_TAG.'/i', '/\s*'.self::MAPS_TAG.'/i', '/[ \t]{2,}/'], ['', '', ' '], $notes));
     }
 }

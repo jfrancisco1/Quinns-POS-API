@@ -51,9 +51,10 @@ class BackfillCustomerCoordinatesTest extends TestCase
         ]);
         $outOfRange = $this->makeCustomer(['notes' => '[geo:95.0, 123.0]']);
         $untagged = $this->makeCustomer(['notes' => 'Call before delivery']);
+        $mapsLink = $this->makeCustomer(['notes' => 'Blk 16 [maps:https://maps.app.goo.gl/HYxVKmNbpNE5W9eV8?g_st=ac]']);
 
         $this->artisan('customers:backfill-coordinates', ['--apply' => true])
-            ->expectsConfirmation('Update 2 customers now?', 'yes')
+            ->expectsConfirmation('Update 3 customers now?', 'yes')
             ->assertSuccessful();
 
         $tagged->refresh();
@@ -68,5 +69,7 @@ class BackfillCustomerCoordinatesTest extends TestCase
         $this->assertNull($outOfRange->fresh()->latitude);
         $this->assertSame('[geo:95.0, 123.0]', $outOfRange->fresh()->notes);
         $this->assertSame('Call before delivery', $untagged->fresh()->notes);
+        $this->assertSame('Blk 16', $mapsLink->fresh()->notes);
+        $this->assertNull($mapsLink->fresh()->latitude);
     }
 }
