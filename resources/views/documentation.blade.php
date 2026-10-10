@@ -657,7 +657,7 @@
                 <tr><td class="field-name">nickname</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
                 <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td></td></tr>
-                <tr><td class="field-name">latitude</td><td>decimal</td><td class="optional">No</td><td>Between -90 and 90</td></tr>
+                <tr><td class="field-name">latitude</td><td>decimal</td><td class="optional">No</td><td>Between -90 and 90. Older customers tagged by the drivers app may have their location only in <code>notes</code> as <code>[geo:lat, lng]</code> until the <code>customers:backfill-coordinates</code> command is run</td></tr>
                 <tr><td class="field-name">longitude</td><td>decimal</td><td class="optional">No</td><td>Between -180 and 180</td></tr>
                 <tr><td class="field-name">notes</td><td>string</td><td class="optional">No</td><td></td></tr>
                 <tr><td class="field-name">delivery_fee</td><td>decimal</td><td class="optional">No</td><td>Defaults to 75.00</td></tr>
