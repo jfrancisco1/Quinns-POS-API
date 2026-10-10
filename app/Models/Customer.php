@@ -47,13 +47,9 @@ class Customer extends Model
     {
         $user = Auth::user();
 
-        $query = $this->where($field ?? $this->getRouteKeyName(), $value)
-            ->where('tenant_id', $user?->tenant_id ?? 1);
-
-        if (in_array($user?->role ?? 'admin', ['staff', 'delivery'])) {
-            $query->where('branch_id', $user?->branch_id ?? 1);
-        }
-
-        return $query->firstOrFail();
+        // Customers are shared across all branches of a tenant.
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('tenant_id', $user?->tenant_id ?? 1)
+            ->firstOrFail();
     }
 }

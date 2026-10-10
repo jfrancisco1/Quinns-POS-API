@@ -23,6 +23,7 @@ class CustomerResource extends JsonResource
             'longitude'   => $this->longitude,
             'notes'       => $this->notes,
             'deliveryFee' => $this->delivery_fee,
+            'branch_id'   => $this->branch_id,
             'last_visit'  => $this->orders_max_created_at,
             'total_spend' => $this->orders_sum_total ?? 0,
             'created_at'  => $this->created_at->toDateTimeString(),

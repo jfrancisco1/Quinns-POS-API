@@ -640,7 +640,7 @@
                 <tr>
                     <td><span class="method get">GET</span></td>
                     <td class="path">/customers</td>
-                    <td class="desc">List all customers — supports <code>?search=</code> to filter by nickname or mobile</td>
+                    <td class="desc">List all customers across every branch of the tenant (staff and delivery included) — supports <code>?search=</code> to filter by nickname or mobile</td>
                 </tr>
                 <tr>
                     <td><span class="method post">POST</span></td>
@@ -665,6 +665,8 @@
             </tbody>
         </table>
 
+        <p class="desc" style="margin-top: 20px;">Customers are shared across all branches of a tenant: any staff or delivery user can list, view, and update any customer in their tenant. <code style="font-family:monospace;background:#f5f5f5;padding:1px 5px;border-radius:3px;">branch_id</code> on a customer is the branch where they were first registered. Staff can only delete customers registered at their own branch.</p>
+
         <div class="fields-title">Query Parameters — GET /customers</div>
         <table class="fields-table">
             <thead>
@@ -682,8 +684,8 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">nickname</td><td>string</td><td class="required">Yes</td><td>Must be unique</td></tr>
-                <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td>Must be unique</td></tr>
+                <tr><td class="field-name">nickname</td><td>string</td><td class="required">Yes</td><td>Max 255 characters. Does not need to be unique</td></tr>
+                <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td>Max 20 characters. Unique within the tenant (all branches); deleted customers are ignored. A duplicate returns 422 <code>A customer with this mobile number already exists.</code></td></tr>
                 <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td></td></tr>
                 <tr><td class="field-name">latitude</td><td>decimal</td><td class="optional">No</td><td>Between -90 and 90. Older customers tagged by the drivers app may still have their location in <code>notes</code> as <code>[geo:lat, lng]</code> until the <code>customers:backfill-coordinates</code> command moves it here</td></tr>
                 <tr><td class="field-name">longitude</td><td>decimal</td><td class="optional">No</td><td>Between -180 and 180</td></tr>
@@ -700,6 +702,9 @@
 <span class="key">"longitude"</span>: <span class="str">"123.2026878"</span>,
 <span class="key">"notes"</span>: <span class="str">""</span>,
 <span class="key">"deliveryFee"</span>: <span class="num">75</span>,
+<span class="key">"branch_id"</span>: <span class="num">1</span>,
+<span class="key">"last_visit"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
+<span class="key">"total_spend"</span>: <span class="num">1250</span>,
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
     </section>

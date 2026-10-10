@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Customer;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 class UpdateCustomerRequest extends FormRequest
 {
@@ -21,16 +23,30 @@ class UpdateCustomerRequest extends FormRequest
      */
     public function rules(): array
     {
-        $customerId = $this->route('customer')->id;
-
         return [
-            'nickname' => ['sometimes', 'string', 'max:255', "unique:customers,nickname,{$customerId}"],
-            'mobile' => ['sometimes', 'nullable', 'string', 'max:20', "unique:customers,mobile,{$customerId}"],
+            'nickname' => ['sometimes', 'string', 'max:255'],
+            'mobile' => ['sometimes', 'nullable', 'string', 'max:20', $this->uniqueMobileRule()],
             'address' => ['sometimes', 'nullable', 'string'],
             'latitude' => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'delivery_fee' => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'mobile.unique' => 'A customer with this mobile number already exists.',
+        ];
+    }
+
+    /** Mobile is unique per tenant, ignoring soft-deleted customers. */
+    private function uniqueMobileRule(): Unique
+    {
+        return Rule::unique('customers', 'mobile')
+            ->where('tenant_id', $this->user()?->tenant_id ?? 1)
+            ->whereNull('deleted_at')
+            ->ignore($this->route('customer')->id);
     }
 }

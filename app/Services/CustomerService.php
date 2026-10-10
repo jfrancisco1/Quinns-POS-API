@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,22 +14,24 @@ class CustomerService extends BaseService
         return Customer::class;
     }
 
+    /** Customers are shared across all branches of a tenant, so staff and delivery are not branch-scoped. */
+    protected function tenantScope(): Builder
+    {
+        return Customer::where('tenant_id', Auth::user()?->tenant_id ?? 1);
+    }
+
     public function getAll(?string $search = null, ?int $branchId = null): Collection
     {
-        $query = $this->tenantScope()
+        return $this->tenantScope()
             ->withMax('orders', 'created_at')
             ->withSum('orders', 'total')
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('nickname', 'ilike', "%{$search}%")
                   ->orWhere('mobile', 'ilike', "%{$search}%");
             }))
-            ->latest();
-
-        if ($branchId && Auth::user()?->role === 'admin') {
-            $query->where('branch_id', $branchId);
-        }
-
-        return $query->get();
+            ->when($branchId && Auth::user()?->role === 'admin', fn ($q) => $q->where('branch_id', $branchId))
+            ->latest()
+            ->get();
     }
 
     public function findById(string $id): Customer
@@ -57,8 +60,7 @@ class CustomerService extends BaseService
 
     public function update(Customer $customer, array $data): Customer
     {
-        $this->authorizeTenant($customer);
-
+        // Any branch may edit a shared customer; route binding already enforces the tenant.
         $customer->update($data);
         return $customer->fresh();
     }

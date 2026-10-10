@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Customer;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 class StoreCustomerRequest extends FormRequest
 {
@@ -22,8 +24,8 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nickname' => ['required', 'string', 'max:255', 'unique:customers,nickname'],
-            'mobile' => ['nullable', 'string', 'max:20', 'unique:customers,mobile'],
+            'nickname' => ['required', 'string', 'max:255'],
+            'mobile' => ['nullable', 'string', 'max:20', $this->uniqueMobileRule()],
             'address' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
@@ -37,5 +39,13 @@ class StoreCustomerRequest extends FormRequest
         return [
             'mobile.unique' => 'A customer with this mobile number already exists.',
         ];
+    }
+
+    /** Mobile is unique per tenant, ignoring soft-deleted customers. */
+    private function uniqueMobileRule(): Unique
+    {
+        return Rule::unique('customers', 'mobile')
+            ->where('tenant_id', $this->user()?->tenant_id ?? 1)
+            ->whereNull('deleted_at');
     }
 }
