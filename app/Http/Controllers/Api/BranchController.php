@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Branch\CopyBranchItemsRequest;
 use App\Http\Requests\Branch\StoreBranchRequest;
 use App\Http\Requests\Branch\UpdateBranchRequest;
 use App\Http\Resources\BranchResource;
@@ -33,6 +34,7 @@ class BranchController extends Controller
         abort_if($user->role !== 'admin', 403, 'Only admins can create branches.');
 
         $branch = $this->branchService->create($user->tenant, $request->validated());
+
         return new BranchResource($branch);
     }
 
@@ -42,6 +44,7 @@ class BranchController extends Controller
         abort_if($branch->tenant_id !== $user->tenant_id, 403, 'Unauthorized.');
 
         $branch->loadCount('users');
+
         return new BranchResource($branch);
     }
 
@@ -52,6 +55,7 @@ class BranchController extends Controller
         abort_if($branch->tenant_id !== $user->tenant_id, 403, 'Unauthorized.');
 
         $branch = $this->branchService->update($branch, $request->validated());
+
         return new BranchResource($branch);
     }
 
@@ -62,6 +66,27 @@ class BranchController extends Controller
         abort_if($branch->tenant_id !== $user->tenant_id, 403, 'Unauthorized.');
 
         $this->branchService->delete($branch);
+
         return response()->json(['message' => 'Branch deleted successfully.']);
+    }
+
+    public function copyItems(CopyBranchItemsRequest $request, Branch $branch): JsonResponse
+    {
+        $user = Auth::user();
+        abort_if($user->role !== 'admin', 403, 'Only admins can copy branch items.');
+        abort_if($branch->tenant_id !== $user->tenant_id, 403, 'Unauthorized.');
+
+        $source = Branch::findOrFail($request->validated('source_branch_id'));
+        $result = $this->branchService->copyItems($source, $branch);
+
+        return response()->json([
+            'message' => "Copied {$result['copied']} item(s) from {$source->name} to {$branch->name}.",
+            'data' => [
+                'source_branch_id' => $source->id,
+                'target_branch_id' => $branch->id,
+                'copied' => $result['copied'],
+                'skipped' => $result['skipped'],
+            ],
+        ]);
     }
 }

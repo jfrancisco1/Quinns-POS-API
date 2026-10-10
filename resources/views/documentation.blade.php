@@ -567,6 +567,12 @@
                     <td class="desc">Delete a branch</td>
                     <td class="desc">Admin</td>
                 </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/branches/{id}/copy-items</td>
+                    <td class="desc">Copy all items from another branch into this branch</td>
+                    <td class="desc">Admin</td>
+                </tr>
             </tbody>
         </table>
 
@@ -592,6 +598,28 @@
 <span class="key">"is_active"</span>: <span class="bool">true</span>,
 <span class="key">"created_at"</span>: <span class="str">"2024-01-01 00:00:00"</span>,
 <span class="key">"updated_at"</span>: <span class="str">"2024-01-01 00:00:00"</span></div>
+
+        <div class="fields-title">Copy Items — <code>POST /branches/{id}/copy-items</code></div>
+        <p class="desc" style="margin-bottom: 12px;">
+            Duplicates every item (name, description, color, shape, price, cost, category, sort order, active flag) from the source branch into the target branch <code>{id}</code>.
+            Items whose name already exists in the target branch are skipped, so the call is safe to repeat.
+            Categories and expense categories are shared tenant-wide, so they are already available to every branch and are not copied.
+        </p>
+        <table class="fields-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="field-name">source_branch_id</td><td>integer</td><td class="required">Yes</td><td>A branch in your tenant, different from the target</td></tr>
+            </tbody>
+        </table>
+        <div class="code-block"><span class="key">"message"</span>: <span class="str">"Copied 12 item(s) from Main Branch to Canaman Branch."</span>,
+<span class="key">"data"</span>: {
+  <span class="key">"source_branch_id"</span>: <span class="num">1</span>,
+  <span class="key">"target_branch_id"</span>: <span class="num">2</span>,
+  <span class="key">"copied"</span>: <span class="num">12</span>,
+  <span class="key">"skipped"</span>: <span class="num">0</span>
+}</div>
     </section>
 
     <hr class="divider">
