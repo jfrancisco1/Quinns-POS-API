@@ -20,7 +20,7 @@ Run in Railway's interactive **Console** tab (or `railway run ...`) so the confi
 
 Command: `customers:backfill-coordinates`
 
-Copies `[geo:lat, lng]` tags from customer `notes` into the `latitude`/`longitude` columns for customers that have none. Notes are left unchanged; existing coordinates are never overwritten.
+Moves `[geo:lat, lng]` tags from customer `notes` into the `latitude`/`longitude` columns: fills coordinates for customers that have none (existing coordinates are never overwritten), then removes the tag from `notes`. Safe to re-run.
 
 Dry run:
 ```bash

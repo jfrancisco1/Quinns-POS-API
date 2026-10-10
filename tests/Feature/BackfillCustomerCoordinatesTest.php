@@ -41,9 +41,9 @@ class BackfillCustomerCoordinatesTest extends TestCase
         $this->assertNull($customer->fresh()->longitude);
     }
 
-    public function test_apply_copies_geo_tag_from_notes_into_coordinates(): void
+    public function test_apply_moves_geo_tag_from_notes_into_coordinates(): void
     {
-        $tagged = $this->makeCustomer(['notes' => 'Blue gate [geo:13.6462186, 123.2026878]']);
+        $tagged = $this->makeCustomer(['notes' => 'Blue gate [geo:13.6462186, 123.2026878] near church']);
         $alreadySet = $this->makeCustomer([
             'notes' => '[geo:1.0, 2.0]',
             'latitude' => 14.5,
@@ -53,16 +53,20 @@ class BackfillCustomerCoordinatesTest extends TestCase
         $untagged = $this->makeCustomer(['notes' => 'Call before delivery']);
 
         $this->artisan('customers:backfill-coordinates', ['--apply' => true])
-            ->expectsConfirmation('Update 1 customers now?', 'yes')
+            ->expectsConfirmation('Update 2 customers now?', 'yes')
             ->assertSuccessful();
 
         $tagged->refresh();
         $this->assertSame('13.6462186', $tagged->latitude);
         $this->assertSame('123.2026878', $tagged->longitude);
-        $this->assertSame('Blue gate [geo:13.6462186, 123.2026878]', $tagged->notes);
+        $this->assertSame('Blue gate near church', $tagged->notes);
 
-        $this->assertSame('14.5000000', $alreadySet->fresh()->latitude);
+        $alreadySet->refresh();
+        $this->assertSame('14.5000000', $alreadySet->latitude);
+        $this->assertSame('', $alreadySet->notes);
+
         $this->assertNull($outOfRange->fresh()->latitude);
-        $this->assertNull($untagged->fresh()->latitude);
+        $this->assertSame('[geo:95.0, 123.0]', $outOfRange->fresh()->notes);
+        $this->assertSame('Call before delivery', $untagged->fresh()->notes);
     }
 }
