@@ -777,7 +777,7 @@
                 <tr><td class="field-name">to</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD — end of date range (inclusive). Must be used with <code>from</code></td></tr>
                 <tr><td class="field-name">date_basis</td><td>string</td><td class="optional">No</td><td><code>created</code> (default) filters <code>from</code>/<code>to</code> by order creation date. <code>paid</code> filters by the date each order most recently transitioned into its current paid status — same semantics as <code>date_basis</code> on <code>/reports/sales-by-payment-type</code>. With <code>paid</code>, results are restricted to orders currently in a paid status (unpaid orders have no payment date and are excluded)</td></tr>
                 <tr><td class="field-name">payment_status</td><td>string</td><td class="optional">No</td><td>Filter by payment status. Values: <code>unpaid</code>, <code>paid</code></td></tr>
-                <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>in_progress</code>, <code>completed</code></td></tr>
+                <tr><td class="field-name">order_status</td><td>string</td><td class="optional">No</td><td>Filter by order status. Values: <code>pending</code>, <code>in_progress</code>, <code>ready</code>, <code>completed</code>, <code>cancelled</code></td></tr>
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
                 <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on customer nickname</td></tr>
                 <tr><td class="field-name">cursor</td><td>string</td><td class="optional">No</td><td>Opaque cursor string returned in <code>nextCursor</code> / <code>prevCursor</code> of a previous response. Omit for the first page.</td></tr>
@@ -798,7 +798,7 @@
                 <tr><td class="field-name">total</td><td>decimal</td><td class="required">Yes</td><td></td></tr>
                 <tr><td class="field-name">createdAt</td><td>string</td><td class="optional">No</td><td>ISO 8601 client timestamp</td></tr>
                 <tr><td class="field-name">paymentStatus</td><td>string</td><td class="optional">No</td><td>unpaid | paid_gcash | paid_cash | paid_others | paid_bank (default: unpaid)</td></tr>
-                <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>in_progress | ready | completed (default: in_progress)</td></tr>
+                <tr><td class="field-name">orderStatus</td><td>string</td><td class="optional">No</td><td>pending | in_progress | ready | completed | cancelled (default: in_progress)</td></tr>
                 <tr><td class="field-name">items</td><td>array</td><td class="required">Yes</td><td>At least 1 item required</td></tr>
             </tbody>
         </table>
@@ -832,7 +832,7 @@
                 <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
             </thead>
             <tbody>
-                <tr><td class="field-name">orderStatus</td><td>string</td><td class="required">Yes</td><td>in_progress | ready | completed</td></tr>
+                <tr><td class="field-name">orderStatus</td><td>string</td><td class="required">Yes</td><td>pending | in_progress | ready | completed | cancelled</td></tr>
             </tbody>
         </table>
 
