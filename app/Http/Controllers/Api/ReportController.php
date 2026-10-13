@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Services\ReportService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,25 @@ class ReportController extends Controller
         $result   = $this->reportService->expensesByCategory($request->from, $request->to, $branchId);
 
         return response()->json(array_merge(['from' => $request->from, 'to' => $request->to, 'branch' => $branch], $result));
+    }
+
+    public function loads(Request $request): JsonResponse
+    {
+        $request->validate([
+            'from'      => ['required', 'date'],
+            'to'        => ['required', 'date', 'after_or_equal:from'],
+            'branch_id' => ['nullable', 'integer'],
+        ]);
+
+        $branchId = $request->integer('branch_id') ?: null;
+        $branch   = $this->resolveBranch($branchId);
+        $result   = $this->reportService->loadsSummary($request->from, $request->to, $branchId);
+
+        return response()->json(array_merge([
+            'from'   => Carbon::parse($request->from)->startOfDay()->format('Y-m-d H:i:s'),
+            'to'     => Carbon::parse($request->to)->endOfDay()->format('Y-m-d H:i:s'),
+            'branch' => $branch,
+        ], $result));
     }
 
     private function resolveBranch(?int $branchId): ?array

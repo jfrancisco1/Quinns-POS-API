@@ -90,7 +90,7 @@ class ReportService extends BaseService
             ->selectRaw('
                 payment_status,
                 COUNT(*) as transactions,
-                COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as payment_amount,
+                COALESCE(SUM(total), 0) as payment_amount,
                 COALESCE(SUM(delivery_fee), 0) as delivery_fee_amount
             ')
             ->groupBy('payment_status')
@@ -156,7 +156,7 @@ class ReportService extends BaseService
             ->selectRaw('
                 orders.payment_status,
                 COUNT(*) as transactions,
-                COALESCE(SUM(orders.subtotal + orders.delivery_fee - orders.discount_amount), 0) as payment_amount,
+                COALESCE(SUM(orders.total), 0) as payment_amount,
                 COALESCE(SUM(orders.delivery_fee), 0) as delivery_fee_amount
             ')
             ->groupBy('orders.payment_status')
@@ -239,7 +239,7 @@ class ReportService extends BaseService
         // Collected (paid) — actual amount collected from the customer, i.e. order.total
         $collected = (float) $baseQuery()
             ->whereIn('payment_status', ['paid_cash', 'paid_gcash', 'paid_others', 'paid_bank'])
-            ->sum(DB::raw('subtotal + delivery_fee - discount_amount'));
+            ->sum('total');
 
         // Portion of collected that is delivery fee (pass-through), for net-revenue breakdowns
         $deliveryFeesCollected = (float) $baseQuery()
@@ -249,7 +249,7 @@ class ReportService extends BaseService
         // Outstanding (unpaid) — actual amount still owed, i.e. order.total
         $unpaidRow = $baseQuery()
             ->where('payment_status', 'unpaid')
-            ->selectRaw('COUNT(*) as orders, COALESCE(SUM(subtotal + delivery_fee - discount_amount), 0) as outstanding')
+            ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total), 0) as outstanding')
             ->first();
 
         $grossProfit = $netSales - $costOfGoods;
@@ -271,6 +271,67 @@ class ReportService extends BaseService
             'unpaidOrders'          => (int) $unpaidRow->orders,
             'group_by'              => $groupBy,
             'series'                => $series,
+        ];
+    }
+
+    /**
+     * Wash-load totals over every order created in the range, paid or unpaid.
+     * Cancelled orders are included, matching GET /orders, which does not filter them out.
+     */
+    public function loadsSummary(string $from, string $to, ?int $branchId = null): array
+    {
+        $user     = Auth::user();
+        $tenantId = $user?->tenant_id ?? 1;
+        $role     = $user?->role ?? 'admin';
+
+        $baseQuery = function () use ($tenantId, $role, $user, $branchId, $from, $to) {
+            $q = Order::query()
+                ->where('orders.tenant_id', $tenantId)
+                ->whereBetween('orders.created_at', $this->localDayRangeUtc($from, $to));
+
+            if (in_array($role, ['staff', 'delivery'])) {
+                $q->where('orders.branch_id', $user->branch_id);
+            } elseif ($role === 'admin' && $branchId !== null) {
+                $q->where('orders.branch_id', $branchId);
+            }
+
+            return $q;
+        };
+
+        $fulfillmentKey = "LOWER(REPLACE(orders.fulfillment_type, '-', '_'))";
+
+        $fulfillmentRows = $baseQuery()
+            ->selectRaw("{$fulfillmentKey} as fulfillment, COUNT(*) as orders")
+            ->groupByRaw($fulfillmentKey)
+            ->orderByRaw($fulfillmentKey)
+            ->get();
+
+        // One row per item; if an item was renamed, report its most recent label.
+        $itemRows = $baseQuery()
+            ->join('order_items as oi', 'oi.order_number', '=', 'orders.order_number')
+            ->selectRaw('
+                oi.item_id,
+                (ARRAY_AGG(oi.label ORDER BY orders.created_at DESC))[1] as label,
+                SUM(oi.qty) as qty
+            ')
+            ->groupBy('oi.item_id')
+            ->orderByDesc('qty')
+            ->orderBy('oi.item_id')
+            ->get();
+
+        $breakdown = $itemRows->map(fn ($row) => [
+            'itemId' => $row->item_id,
+            'label'  => $row->label,
+            'qty'    => (int) $row->qty,
+        ])->all();
+
+        return [
+            'totalLoads'          => array_sum(array_column($breakdown, 'qty')),
+            'orderCount'          => (int) $fulfillmentRows->sum('orders'),
+            'breakdown'           => $breakdown,
+            'ordersByFulfillment' => (object) $fulfillmentRows
+                ->mapWithKeys(fn ($row) => [$row->fulfillment => (int) $row->orders])
+                ->all(),
         ];
     }
 

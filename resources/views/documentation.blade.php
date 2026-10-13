@@ -1100,6 +1100,11 @@
                     <td class="path">/reports/expenses-by-category</td>
                     <td class="desc">Expense breakdown by category — transaction count and total amount per category</td>
                 </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/reports/loads</td>
+                    <td class="desc">Wash loads — total item qty, per-item breakdown, and order counts by fulfillment type, over all orders (paid + unpaid)</td>
+                </tr>
             </tbody>
         </table>
 
@@ -1145,11 +1150,12 @@
 <span class="comm">// fulfilling deliveries (e.g. rider payouts) isn't logged as an Expense, netProfit will read</span>
 <span class="comm">// higher than actual take-home by roughly the period's total delivery fees.</span>
 <span class="key">"collected"</span>: <span class="num">10750.00</span>,
-<span class="comm">// collected = actual amount collected from paid orders (subtotal + deliveryFee - discount), matching order.total</span>
+<span class="comm">// collected = sum of order.total over paid orders</span>
 <span class="key">"deliveryFeesCollected"</span>: <span class="num">250.00</span>,
 <span class="comm">// deliveryFeesCollected = portion of "collected" that is delivery fee (pass-through, not net revenue)</span>
 <span class="key">"outstanding"</span>: <span class="num">1650.00</span>,
-<span class="comm">// outstanding = actual amount still owed on unpaid orders (subtotal + deliveryFee - discount), matching order.total; collected + outstanding = netSales</span>
+<span class="comm">// outstanding = sum of order.total over unpaid orders — same orders as GET /orders?payment_status=unpaid&amp;from=&amp;to= (cancelled included);</span>
+<span class="comm">// collected + outstanding = netSales as long as each order.total = subtotal + deliveryFee - discount</span>
 <span class="key">"unpaidOrders"</span>: <span class="num">3</span>,
 <span class="comm">// unpaidOrders = count of unpaid orders</span>
 <span class="key">"group_by"</span>: <span class="str">"day"</span>,
@@ -1234,8 +1240,9 @@
   <span class="key">"amount"</span>: <span class="num">1650.00</span>
 }</div>
 <span class="comm">// unpaid block is included only for the default date_basis=created. payment_amount (and</span>
-<span class="comm">// unpaid.amount) = subtotal + delivery_fee - discount_amount per method, matching order.total</span>
-<span class="comm">// for orders in that method — same formula as "collected"/"outstanding" in /reports/sales.</span>
+<span class="comm">// unpaid.amount) = sum of order.total for orders in that method — same as "collected"/"outstanding"</span>
+<span class="comm">// in /reports/sales. unpaid.transactions / unpaid.amount cover the same orders as</span>
+<span class="comm">// GET /orders?payment_status=unpaid&amp;from=&amp;to= (cancelled orders included).</span>
 <span class="comm">// delivery_fee_amount is the portion of payment_amount that is delivery fee (pass-through) —</span>
 <span class="comm">// subtract it for a net-revenue figure per payment method.</span>
 
@@ -1260,8 +1267,8 @@
 <span class="comm">// date_basis=paid: breakdown is keyed by an order's CURRENT payment_status, bucketed by the</span>
 <span class="comm">// changed_at of the most recent payment_history row where to_status = that current status</span>
 <span class="comm">// (so a correction like unpaid -&gt; paid_cash -&gt; unpaid -&gt; paid_gcash counts once, under</span>
-<span class="comm">// paid_gcash, on the date of the second transition). payment_amount = subtotal + delivery_fee -</span>
-<span class="comm">// discount_amount, i.e. the actual amount collected per order.total, matching "collected" in</span>
+<span class="comm">// paid_gcash, on the date of the second transition). payment_amount = sum of order.total,</span>
+<span class="comm">// i.e. the actual amount collected, matching "collected" in</span>
 <span class="comm">// /reports/sales. delivery_fee_amount is the portion of payment_amount that is delivery fee</span>
 <span class="comm">// (pass-through) — subtract it for a net-revenue figure per payment method. Orders currently</span>
 <span class="comm">// unpaid have no payment date and are excluded entirely — the "unpaid" key is omitted from the</span>
@@ -1286,6 +1293,25 @@
   }
 ],
 <span class="key">"total"</span>: <span class="num">10950.00</span></div>
+
+        <div class="fields-title">Response — GET /reports/loads</div>
+        <div class="code-block"><span class="key">"from"</span>: <span class="str">"2026-01-01 00:00:00"</span>,
+<span class="key">"to"</span>: <span class="str">"2026-12-31 23:59:59"</span>,
+<span class="key">"branch"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"name"</span>: <span class="str">"Main Branch"</span>, <span class="key">"address"</span>: <span class="str">"123 St"</span>, <span class="key">"phone"</span>: <span class="str">"09xx"</span> },
+<span class="key">"totalLoads"</span>: <span class="num">1840</span>,
+<span class="comm">// totalLoads = sum of order item qty across all orders in range</span>
+<span class="key">"orderCount"</span>: <span class="num">912</span>,
+<span class="key">"breakdown"</span>: [
+  { <span class="key">"itemId"</span>: <span class="str">"5"</span>, <span class="key">"label"</span>: <span class="str">"Wash &amp; Fold"</span>, <span class="key">"qty"</span>: <span class="num">1200</span> },
+  { <span class="key">"itemId"</span>: <span class="str">"7"</span>, <span class="key">"label"</span>: <span class="str">"Fabric Conditioner"</span>, <span class="key">"qty"</span>: <span class="num">300</span> }
+],
+<span class="comm">// one row per itemId, sorted by qty descending. itemId / label match items[].itemId / items[].label</span>
+<span class="comm">// in GET /orders; if an item was renamed within the range, label is the most recent one</span>
+<span class="key">"ordersByFulfillment"</span>: { <span class="key">"walk_in"</span>: <span class="num">700</span>, <span class="key">"pickup_deliver"</span>: <span class="num">212</span> }
+<span class="comm">// order counts keyed by fulfillmentType, lowercased with "-" replaced by "_"</span></div>
+<span class="comm">// Covers every order created in the range regardless of payment status (paid + unpaid), and</span>
+<span class="comm">// includes cancelled orders — the same order set as GET /orders?from=&amp;to= (date_basis=created).</span>
+<span class="comm">// An empty range returns totalLoads 0, orderCount 0, breakdown [] and ordersByFulfillment {}.</span>
     </section>
 
     <hr class="divider">

@@ -55,6 +55,7 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/sales-by-item', [ReportController::class, 'salesByItem']);
             Route::get('reports/sales-by-payment-type', [ReportController::class, 'salesByPaymentType']);
             Route::get('reports/expenses-by-category', [ReportController::class, 'expensesByCategory']);
+            Route::get('reports/loads', [ReportController::class, 'loads']);
         });
     });
 });
