@@ -132,19 +132,30 @@ class ReportService extends BaseService
 
         [$startUtc, $endUtc] = $this->localDayRangeUtc($from, $to);
 
-        $latestPayment = DB::table('payment_history as ph')
-            ->join('orders as o', 'o.order_number', '=', 'ph.order_number')
-            ->whereColumn('ph.to_status', 'o.payment_status')
-            ->groupBy('ph.order_number')
-            ->selectRaw('ph.order_number, MAX(ph.changed_at) as changed_at');
-
+        // Start from the payment_history rows in range and keep each order's latest transition
+        // into its current status (ties broken by id, so an order counts once), rather than
+        // aggregating every tenant's payment history first.
         $query = Order::query()
-            ->joinSub($latestPayment, 'latest_payment', function ($join) {
-                $join->on('latest_payment.order_number', '=', 'orders.order_number');
+            ->join('payment_history as ph', function ($join) {
+                $join->on('ph.order_number', '=', 'orders.order_number')
+                    ->on('ph.to_status', '=', 'orders.payment_status');
             })
             ->where('orders.tenant_id', $tenantId)
             ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_bank', 'paid_others'])
-            ->whereBetween('latest_payment.changed_at', [$startUtc, $endUtc]);
+            ->whereBetween('ph.changed_at', [$startUtc, $endUtc])
+            ->whereNotExists(function ($later) {
+                $later->select(DB::raw(1))
+                    ->from('payment_history as ph2')
+                    ->whereColumn('ph2.order_number', 'ph.order_number')
+                    ->whereColumn('ph2.to_status', 'ph.to_status')
+                    ->where(function ($q) {
+                        $q->whereColumn('ph2.changed_at', '>', 'ph.changed_at')
+                            ->orWhere(function ($q) {
+                                $q->whereColumn('ph2.changed_at', 'ph.changed_at')
+                                    ->whereColumn('ph2.id', '>', 'ph.id');
+                            });
+                    });
+            });
 
         if (in_array($role, ['staff', 'delivery'])) {
             $query->where('orders.branch_id', $user->branch_id);

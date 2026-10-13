@@ -34,19 +34,19 @@ class OrderService extends BaseService
 
         if ($from && $to) {
             if ($dateBasis === 'paid') {
-                $latestPayment = DB::table('payment_history as ph')
-                    ->join('orders as o', 'o.order_number', '=', 'ph.order_number')
-                    ->whereColumn('ph.to_status', 'o.payment_status')
-                    ->groupBy('ph.order_number')
-                    ->selectRaw('ph.order_number, MAX(ph.changed_at) as changed_at');
+                [$startUtc, $endUtc] = $this->localDayRangeUtc($from, $to);
 
+                // Looked up per order so a page stops after 30 matches, instead of aggregating
+                // every tenant's payment history first. A payment is never recorded before its
+                // order was created, so orders created after the range can be skipped.
                 $query
-                    ->select('orders.*')
-                    ->joinSub($latestPayment, 'latest_payment', function ($join) {
-                        $join->on('latest_payment.order_number', '=', 'orders.order_number');
-                    })
                     ->whereIn('orders.payment_status', ['paid_cash', 'paid_gcash', 'paid_bank', 'paid_others'])
-                    ->whereBetween('latest_payment.changed_at', $this->localDayRangeUtc($from, $to));
+                    ->where('orders.created_at', '<=', $endUtc)
+                    ->whereRaw('
+                        (SELECT MAX(ph.changed_at) FROM payment_history ph
+                         WHERE ph.order_number = orders.order_number AND ph.to_status = orders.payment_status)
+                        BETWEEN ? AND ?
+                    ', [$startUtc, $endUtc]);
             } else {
                 $query->whereBetween('created_at', $this->localDayRangeUtc($from, $to));
             }
