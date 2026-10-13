@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\OrderStatusesRequest;
+use App\Http\Requests\Order\AssignOrderRequest;
 use App\Http\Requests\Order\StoreOrderRequest;
+use App\Http\Requests\Order\UpdateDeliveryStatusRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Requests\Order\UpdateOrderStatusRequest;
 use App\Http\Requests\Order\UpdatePaymentStatusRequest;
@@ -31,8 +33,9 @@ class OrderController extends Controller
         $search          = request()->query('search') ?: null;
         $branchId        = request()->integer('branch_id') ?: null;
         $dateBasis       = request()->query('date_basis') === 'paid' ? 'paid' : 'created';
+        $assignedTo      = in_array(request()->query('assigned_to'), ['me', 'none'], true) ? request()->query('assigned_to') : null;
 
-        $paginator = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType, $search, $branchId, $dateBasis);
+        $paginator = $this->orderService->getAll($from, $to, $paymentStatus, $orderStatus, $fulfillmentType, $search, $branchId, $dateBasis, $assignedTo);
         $this->enrichItemMeta($paginator->getCollection()->pluck('items')->flatten());
 
         return response()->json([
@@ -52,7 +55,7 @@ class OrderController extends Controller
 
     public function show(Order $order): OrderResource
     {
-        $order->load(['customer', 'items', 'branch', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy']);
+        $order->load(['customer', 'items', 'branch', 'assignedDriver', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy']);
         $this->enrichItemMeta($order->items);
         return new OrderResource($order);
     }
@@ -85,6 +88,29 @@ class OrderController extends Controller
     public function updatePaymentStatus(UpdatePaymentStatusRequest $request, Order $order): OrderResource
     {
         $order = $this->orderService->updatePaymentStatus($order, $request->validated()['paymentStatus']);
+        return new OrderResource($order);
+    }
+
+    public function assign(AssignOrderRequest $request, Order $order): OrderResource
+    {
+        $validated = $request->validated();
+        $driverId = match (true) {
+            ($validated['action'] ?? null) === 'claim'   => $request->user()->id,
+            ($validated['action'] ?? null) === 'release' => null,
+            default                                      => $validated['driverId'] ?? null,
+        };
+
+        return new OrderResource($this->orderService->assign($order, $driverId));
+    }
+
+    public function updateDeliveryStatus(UpdateDeliveryStatusRequest $request, Order $order): OrderResource
+    {
+        $order = $this->orderService->updateDeliveryStatus(
+            $order,
+            $request->validated('deliveryStatus'),
+            $request->validated('reason'),
+        );
+
         return new OrderResource($order);
     }
 

@@ -239,6 +239,7 @@
     <a href="#branches">Branches</a>
     <a href="#customers">Customers</a>
     <a href="#orders">Orders</a>
+    <a href="#dispatch">Dispatch</a>
     <a href="#expenses">Expenses</a>
     <a href="#expense-categories">Expense Categories</a>
     <a href="#reports">Reports</a>
@@ -781,7 +782,7 @@
                 <tr><td class="field-name">fulfillment_type</td><td>string</td><td class="optional">No</td><td>Filter by fulfillment type (e.g. <code>pickup</code>, <code>delivery</code>)</td></tr>
                 <tr><td class="field-name">search</td><td>string</td><td class="optional">No</td><td>Case-insensitive partial match on customer nickname</td></tr>
                 <tr><td class="field-name">cursor</td><td>string</td><td class="optional">No</td><td>Opaque cursor string returned in <code>nextCursor</code> / <code>prevCursor</code> of a previous response. Omit for the first page.</td></tr>
-                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin only; ignored for staff/delivery)</td></tr>
+                <tr><td class="field-name">branch_id</td><td>integer</td><td class="optional">No</td><td>Filter results to a specific branch (admin and delivery; ignored for staff). Delivery users see orders from every branch of their tenant, and each order includes <code>branch</code> { id, name }</td></tr>
             </tbody>
         </table>
 
@@ -921,6 +922,95 @@
     <hr class="divider">
 
     {{-- Expenses --}}
+    <section id="dispatch">
+        <div class="section-title">Dispatch (Deliveries &amp; Pickups)</div>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">Drivers (<code>delivery</code> role) claim orders and pickups from a shared pool across every branch of their tenant. Every action is idempotent — repeating the current state returns 200 — so the driver app can retry actions it queued offline. A driver acting on something another driver holds gets <code>409</code> with <code>{ message, assignedDriver: { id, name } }</code>.</p>
+        <table class="endpoint-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/orders/{orderNumber}/assignment</td>
+                    <td class="desc">Claim / release an order for delivery (admin: assign a driver)</td>
+                </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/orders/{orderNumber}/delivery-status</td>
+                    <td class="desc">Mark delivered (also completes the order) or failed (back to the pool)</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/pickup-requests</td>
+                    <td class="desc">Drivers: their open pickups + the unclaimed pool. Admin/staff: open pickups, read-only for staff (own branch)</td>
+                </tr>
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td class="path">/pickup-requests</td>
+                    <td class="desc">Create a pickup (admin, delivery). A driver's pickup is assigned to them</td>
+                </tr>
+                <tr>
+                    <td><span class="method get">GET</span></td>
+                    <td class="path">/pickup-requests/{id}</td>
+                    <td class="desc">Get a pickup</td>
+                </tr>
+                <tr>
+                    <td><span class="method patch">PATCH</span></td>
+                    <td class="path">/pickup-requests/{id}</td>
+                    <td class="desc">Run an action and/or edit fields</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="fields-title">PATCH /orders/{orderNumber}/assignment — Request Body</div>
+        <table class="fields-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td class="field-name">action</td><td>string</td><td class="optional">No</td><td><code>claim</code> | <code>release</code>. Required unless <code>driverId</code> is sent</td></tr>
+                <tr><td class="field-name">driverId</td><td>integer</td><td class="optional">No</td><td>Admin only — assign to this delivery user</td></tr>
+            </tbody>
+        </table>
+        <div class="fields-title">PATCH /orders/{orderNumber}/delivery-status — Request Body</div>
+        <table class="fields-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td class="field-name">deliveryStatus</td><td>string</td><td class="required">Yes</td><td><code>delivered</code> | <code>failed</code></td></tr>
+                <tr><td class="field-name">reason</td><td>string</td><td class="optional">No</td><td>Why it failed. Max 255</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">Orders now include <code>deliveryStatus</code> (<code>unassigned</code> | <code>assigned</code> | <code>delivered</code>) and <code>assignedDriver</code> { id, name } | null. <code>GET /orders</code> accepts <code>assigned_to=me|none</code>.</p>
+        <div class="fields-title">POST /pickup-requests — Request Body</div>
+        <table class="fields-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td class="field-name">id</td><td>uuid</td><td class="required">Yes</td><td>Generated by the client; resending the same id returns the existing pickup</td></tr>
+                <tr><td class="field-name">branchId</td><td>integer</td><td class="required">Yes</td><td>Branch that will receive the laundry</td></tr>
+                <tr><td class="field-name">customerId</td><td>uuid</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">customerName</td><td>string</td><td class="required">Yes</td><td>Snapshot at request time</td></tr>
+                <tr><td class="field-name">mobile</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">address</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">latitude / longitude</td><td>decimal</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">notes</td><td>string</td><td class="optional">No</td><td></td></tr>
+                <tr><td class="field-name">scheduledFor</td><td>date</td><td class="optional">No</td><td>YYYY-MM-DD. Defaults to today (Asia/Manila)</td></tr>
+                <tr><td class="field-name">assignedDriverId</td><td>integer</td><td class="optional">No</td><td>Admin only; omitted = in the pool</td></tr>
+            </tbody>
+        </table>
+        <div class="fields-title">PATCH /pickup-requests/{id} — Request Body</div>
+        <table class="fields-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td class="field-name">action</td><td>string</td><td class="optional">No</td><td><code>claim</code>, <code>release</code>, <code>pick_up</code>, <code>reopen</code> (undo pick up), <code>receive</code> (dropped at the shop), <code>cancel</code> (admin or the driver who created it)</td></tr>
+                <tr><td class="field-name">driverId</td><td>integer</td><td class="optional">No</td><td>Admin only — assign, or null to put back in the pool</td></tr>
+                <tr><td class="field-name">customerName, mobile, address, notes, bagCount, scheduledFor</td><td></td><td class="optional">No</td><td>Editable while the pickup is open</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:13px;color:#666;margin-bottom:6px;">Statuses: <code>requested</code> → <code>assigned</code> → <code>picked_up</code> → <code>received</code>, or <code>cancelled</code>.</p>
+    </section>
+
     <section id="expenses">
         <div class="section-title">Expenses</div>
 

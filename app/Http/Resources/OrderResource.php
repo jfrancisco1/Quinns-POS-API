@@ -21,6 +21,10 @@ class OrderResource extends JsonResource
             'createdAt'      => $this->created_at_client?->toISOString() ?? $this->created_at->toISOString(),
             'paymentStatus'  => $this->payment_status,
             'orderStatus'    => $this->order_status,
+            'deliveryStatus' => $this->delivery_status,
+            'assignedDriver' => $this->whenLoaded('assignedDriver', fn() => $this->assignedDriver
+                ? ['id' => $this->assignedDriver->id, 'name' => $this->assignedDriver->name]
+                : null),
             'branch'         => $this->whenLoaded('branch', fn() => ['id' => $this->branch->id, 'name' => $this->branch->name]),
             'items'          => OrderItemResource::collection($this->whenLoaded('items')),
             'paymentHistory' => $this->whenLoaded('paymentHistory', fn() =>

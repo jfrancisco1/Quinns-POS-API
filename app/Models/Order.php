@@ -30,6 +30,10 @@ class Order extends Model
         'tenant_id',
         'branch_id',
         'discount_amount',
+        'assigned_driver_id',
+        'delivery_status',
+        'assigned_at',
+        'delivery_failed_reason',
     ];
 
     protected $casts = [
@@ -38,11 +42,18 @@ class Order extends Model
         'delivery_fee'      => 'float',
         'discount_amount'   => 'float',
         'total'             => 'float',
+        'assigned_at'       => 'datetime',
+        'assigned_driver_id' => 'integer',
     ];
 
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function assignedDriver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_driver_id');
     }
 
     public function branch(): BelongsTo
@@ -77,7 +88,8 @@ class Order extends Model
         $query = $this->where($field ?? $this->getRouteKeyName(), $value)
             ->where('tenant_id', $user?->tenant_id ?? 1);
 
-        if (in_array($user?->role ?? 'admin', ['staff', 'delivery'])) {
+        // Drivers serve every branch of their tenant; staff stay scoped to their own branch.
+        if (($user?->role ?? 'admin') === 'staff') {
             $query->where('branch_id', $user?->branch_id ?? 1);
         }
 

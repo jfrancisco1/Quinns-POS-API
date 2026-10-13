@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PickupRequestController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StoreController;
@@ -45,6 +46,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('orders', OrderController::class);
         Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
         Route::patch('orders/{order}/order-status', [OrderController::class, 'updateOrderStatus']);
+        Route::patch('orders/{order}/assignment', [OrderController::class, 'assign']);
+        Route::patch('orders/{order}/delivery-status', [OrderController::class, 'updateDeliveryStatus']);
+        Route::apiResource('pickup-requests', PickupRequestController::class)->except(['destroy']);
         Route::apiResource('expenses', ExpenseController::class);
         Route::apiResource('expense-categories', ExpenseCategoryController::class);
         Route::middleware('admin')->group(function () {

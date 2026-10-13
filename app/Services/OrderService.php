@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\PaymentHistory;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +19,16 @@ class OrderService extends BaseService
         return Order::class;
     }
 
+    /** Drivers serve every branch of their tenant, so delivery is not branch-scoped for orders. */
+    protected function tenantScope(): Builder
+    {
+        if (Auth::user()?->role === 'delivery') {
+            return Order::where('tenant_id', Auth::user()->tenant_id);
+        }
+
+        return parent::tenantScope();
+    }
+
     public function getAll(
         ?string $from = null,
         ?string $to = null,
@@ -25,11 +38,18 @@ class OrderService extends BaseService
         ?string $search = null,
         ?int $branchId = null,
         string $dateBasis = 'created',
+        ?string $assignedTo = null,
     ): CursorPaginator {
-        $query = $this->tenantScope()->with(['customer', 'items', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy'])->orderBy('orders.created_at', 'desc')->orderBy('orders.order_number', 'desc');
+        $query = $this->tenantScope()->with(['customer', 'items', 'branch', 'assignedDriver', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy'])->orderBy('orders.created_at', 'desc')->orderBy('orders.order_number', 'desc');
 
-        if ($branchId && Auth::user()?->role === 'admin') {
+        if ($branchId && in_array(Auth::user()?->role, ['admin', 'delivery'])) {
             $query->where('branch_id', $branchId);
+        }
+
+        if ($assignedTo === 'me') {
+            $query->where('assigned_driver_id', Auth::id());
+        } elseif ($assignedTo === 'none') {
+            $query->whereNull('assigned_driver_id');
         }
 
         if ($from && $to) {
@@ -205,6 +225,121 @@ class OrderService extends BaseService
 
             return $order->load(['customer', 'items', 'orderStatusHistory.updatedBy']);
         });
+    }
+
+    /**
+     * Claims (driver = themselves), assigns (admin, any driver) or releases (`null`) an order
+     * for delivery. Repeating the current state is a no-op, so offline retries are safe.
+     * A driver touching an order another driver holds gets 409.
+     */
+    public function assign(Order $order, ?int $driverId): Order
+    {
+        $this->authorizeTenant($order);
+        $user = Auth::user();
+
+        if ($user->role === 'delivery' && $driverId !== null && $driverId !== $user->id) {
+            abort(403, 'Drivers can only claim orders for themselves.');
+        }
+
+        return DB::transaction(function () use ($order, $driverId, $user) {
+            // Locked so two drivers claiming at the same moment can't both win.
+            $order = Order::whereKey($order->getKey())->lockForUpdate()->firstOrFail();
+            $current = $order->assigned_driver_id;
+
+            if ($current === $driverId) {
+                return $this->loadForDriver($order);
+            }
+
+            if ($user->role === 'delivery' && $current !== null && $current !== $user->id) {
+                $this->conflict($order, 'This order is already being delivered by another driver.');
+            }
+
+            if ($driverId === null) {
+                $order->update(['assigned_driver_id' => null, 'delivery_status' => 'unassigned', 'assigned_at' => null]);
+                return $this->loadForDriver($order);
+            }
+
+            if (in_array($order->order_status, ['completed', 'cancelled'])) {
+                abort(422, 'This order is already closed.');
+            }
+
+            $driverExists = User::where('id', $driverId)
+                ->where('tenant_id', $order->tenant_id)
+                ->where('role', 'delivery')
+                ->exists();
+            abort_unless($driverExists, 422, 'Driver not found.');
+
+            $order->update([
+                'assigned_driver_id'     => $driverId,
+                'delivery_status'        => 'assigned',
+                'assigned_at'            => now(),
+                'delivery_failed_reason' => null,
+            ]);
+
+            return $this->loadForDriver($order);
+        });
+    }
+
+    /**
+     * `delivered` completes the order (claiming it first if it was still in the pool).
+     * `failed` puts it back in the pool with the reason.
+     */
+    public function updateDeliveryStatus(Order $order, string $deliveryStatus, ?string $reason = null): Order
+    {
+        $this->authorizeTenant($order);
+        $user = Auth::user();
+
+        $order = DB::transaction(function () use ($order, $deliveryStatus, $reason, $user) {
+            $order = Order::whereKey($order->getKey())->lockForUpdate()->firstOrFail();
+            $holder = $order->assigned_driver_id;
+
+            if ($deliveryStatus === 'delivered' && $order->delivery_status === 'delivered') {
+                return $order;
+            }
+
+            if ($user->role === 'delivery' && $holder !== null && $holder !== $user->id) {
+                $this->conflict($order, 'This order is assigned to another driver.');
+            }
+
+            if ($deliveryStatus === 'delivered') {
+                $order->update([
+                    'assigned_driver_id' => $holder ?? ($user->role === 'delivery' ? $user->id : null),
+                    'assigned_at'        => $order->assigned_at ?? now(),
+                    'delivery_status'    => 'delivered',
+                ]);
+            } else {
+                $order->update([
+                    'assigned_driver_id'     => null,
+                    'assigned_at'            => null,
+                    'delivery_status'        => 'unassigned',
+                    'delivery_failed_reason' => $reason,
+                ]);
+            }
+
+            return $order;
+        });
+
+        if ($deliveryStatus === 'delivered' && $order->order_status !== 'completed') {
+            $this->updateOrderStatus($order, 'completed');
+        }
+
+        return $this->loadForDriver($order);
+    }
+
+    private function loadForDriver(Order $order): Order
+    {
+        return $order->refresh()->load(['customer', 'items', 'branch', 'assignedDriver', 'paymentHistory.updatedBy', 'orderStatusHistory.updatedBy']);
+    }
+
+    /** 409 with who holds the order, so the app can say "Already taken by Juan". */
+    private function conflict(Order $order, string $message): never
+    {
+        $holder = $order->assignedDriver()->first(['id', 'name']);
+
+        throw new HttpResponseException(response()->json([
+            'message'        => $message,
+            'assignedDriver' => $holder ? ['id' => $holder->id, 'name' => $holder->name] : null,
+        ], 409));
     }
 
     public function delete(Order $order): void

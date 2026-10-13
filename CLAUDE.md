@@ -35,7 +35,8 @@ Laravel 10 REST API for a laundry POS system with multi-tenancy support.
 
 **Multi-tenancy:** Every resource belongs to a `tenant_id` and optionally a `branch_id`. `BaseService` automatically scopes all queries based on the authenticated user's role:
 - `admin` — sees all records for their tenant
-- `staff` / `delivery` — scoped to their branch only
+- `staff` — scoped to their branch only
+- `delivery` — scoped to their branch, except orders (`OrderService`, `Order::resolveRouteBinding`): drivers serve every branch of the tenant
 
 **Service layer** (`app/Services/`): Business logic lives here, not in controllers. `BaseService` provides `tenantScope()` and `authorizeTenant()`. All services extend it.
 
